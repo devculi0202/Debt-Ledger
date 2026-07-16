@@ -6,7 +6,37 @@
     <title>Debt Ledger - Secure</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class', }</script>
+    <script>
+        tailwind.config = { 
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        light: {
+                            bg: '#F8FAFC',
+                            surface: '#FFFFFF',
+                            textPrimary: '#0F172A',
+                            textSecondary: '#64748B',
+                            border: '#E2E8F0',
+                        },
+                        dark: {
+                            bg: '#0F172A',
+                            surface: '#1E293B',
+                            textPrimary: '#F8FAFC',
+                            textSecondary: '#94A3B8',
+                            border: '#334155',
+                        },
+                        brand: {
+                            primary: '#2563EB',
+                            negative: '#EF4444',
+                            positive: '#10B981',
+                            warning: '#F59E0B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
@@ -20,22 +50,22 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-all-custom">
+<body class="bg-light-bg dark:bg-dark-bg text-light-textPrimary dark:text-dark-textPrimary min-h-screen transition-all-custom">
 
     <!-- ========================================== -->
     <!-- AUTHENTICATION PAGE (Visible when logged out)-->
     <!-- ========================================== -->
     <div id="loginContainer" class="hidden min-h-screen flex flex-col items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 p-8 md:p-12 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-w-md w-full text-center space-y-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-2">
-                <i class="fa-solid fa-scale-balanced text-3xl text-indigo-600 dark:text-indigo-400"></i>
+        <div class="bg-light-surface dark:bg-dark-surface p-8 md:p-12 rounded-2xl shadow-xl border border-light-border dark:border-dark-border max-w-md w-full text-center space-y-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-primary/10 dark:bg-brand-primary/20 mb-2">
+                <i class="fa-solid fa-scale-balanced text-3xl text-brand-primary"></i>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Welcome Back</h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Sign in to manage your financial ledgers.</p>
+                <h1 class="text-2xl font-bold text-light-textPrimary dark:text-dark-textPrimary">Welcome Back</h1>
+                <p class="text-light-textSecondary dark:text-dark-textSecondary mt-2 text-sm">Sign in to manage your financial ledgers.</p>
             </div>
             
-            <button onclick="signInWithGithub()" class="w-full flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold py-3 px-4 rounded-xl transition shadow-md">
+            <button onclick="signInWithGithub()" class="w-full flex items-center justify-center gap-3 bg-dark-bg hover:opacity-90 dark:bg-light-surface dark:hover:opacity-90 text-light-surface dark:text-dark-bg font-semibold py-3 px-4 rounded-xl transition shadow-md">
                 <i class="fa-brands fa-github text-xl"></i>
                 Continue with GitHub
             </button>
@@ -49,18 +79,18 @@
         <div class="max-w-6xl mx-auto space-y-6">
             
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 gap-4">
-                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-                    <i class="fa-solid fa-scale-balanced text-indigo-600 dark:text-indigo-400 mr-2"></i>Debt Ledger
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-light-surface dark:bg-dark-surface p-5 rounded-xl shadow-sm border border-light-border dark:border-dark-border gap-4">
+                <h1 class="text-2xl font-bold text-light-textPrimary dark:text-dark-textPrimary">
+                    <i class="fa-solid fa-scale-balanced text-brand-primary mr-2"></i>Debt Ledger
                 </h1>
                 <div class="flex items-center space-x-3">
-                    <div id="userInfo" class="text-sm font-medium text-slate-600 dark:text-slate-300 mr-2 hidden sm:block"></div>
+                    <div id="userInfo" class="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mr-2 hidden sm:block"></div>
                     
-                    <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-full transition shadow-sm border border-slate-200 dark:border-slate-600" title="Toggle Dark Mode">
+                    <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center bg-light-bg dark:bg-dark-bg hover:bg-light-border dark:hover:bg-dark-border text-light-textSecondary dark:text-dark-textSecondary rounded-full transition shadow-sm border border-light-border dark:border-dark-border" title="Toggle Dark Mode">
                         <i id="themeIcon" class="fa-solid fa-moon"></i>
                     </button>
                     
-                    <button onclick="signOut()" class="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-sm font-medium rounded-lg transition shadow-sm border border-rose-200 dark:border-rose-800">
+                    <button onclick="signOut()" class="px-4 py-2 bg-brand-negative/10 hover:bg-brand-negative/20 text-brand-negative text-sm font-medium rounded-lg transition shadow-sm border border-brand-negative/20">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sign Out
                     </button>
                 </div>
@@ -68,64 +98,64 @@
 
             <!-- Summary KPI Dashboard -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Net Position <span class="period-label font-normal text-xs ml-1"></span></p>
-                    <h2 id="netBalance" class="text-3xl font-bold dark:text-white">0 ?</h2>
+                <div class="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+                    <p class="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Net Position <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="netBalance" class="text-3xl font-bold dark:text-dark-textPrimary">0 ?</h2>
                 </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-emerald-500">
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Receivables <span class="period-label font-normal text-xs ml-1"></span></p>
-                    <h2 id="totalReceivables" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">0 ?</h2>
+                <div class="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border border-b-4 border-b-brand-positive">
+                    <p class="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Receivables <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="totalReceivables" class="text-3xl font-bold text-brand-positive">0 ?</h2>
                 </div>
-                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-rose-500">
-                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Liabilities <span class="period-label font-normal text-xs ml-1"></span></p>
-                    <h2 id="totalLiabilities" class="text-3xl font-bold text-rose-600 dark:text-rose-400">0 ?</h2>
+                <div class="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border border-b-4 border-b-brand-negative">
+                    <p class="text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Liabilities <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="totalLiabilities" class="text-3xl font-bold text-brand-negative">0 ?</h2>
                 </div>
             </div>
 
             <!-- Main Layout Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Log / Edit Form -->
-                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit" id="formContainer">
-                    <h3 id="formTitle" class="text-lg font-semibold mb-4 border-b border-slate-100 dark:border-slate-700 pb-2 dark:text-white">Log Transaction</h3>
+                <div class="lg:col-span-1 bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border h-fit" id="formContainer">
+                    <h3 id="formTitle" class="text-lg font-semibold mb-4 border-b border-light-border dark:border-dark-border pb-2 text-light-textPrimary dark:text-dark-textPrimary">Log Transaction</h3>
                     <form id="debtForm" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type</label>
-                            <select id="type" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none">
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Type</label>
+                            <select id="type" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary">
                                 <option value="owed">Owed to Me (+)</option>
                                 <option value="owe">I Owe (-)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Entity</label>
-                            <input type="text" id="person" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="e.g., Alice">
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Entity</label>
+                            <input type="text" id="person" required class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50" placeholder="e.g., Alice">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount (VN?)</label>
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Amount (VN?)</label>
                             <div class="relative">
-                                <input type="number" id="amount" required min="0" step="1" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 pr-8 outline-none" placeholder="100000">
-                                <span class="absolute right-3 top-2.5 text-slate-400 font-medium">?</span>
+                                <input type="number" id="amount" required min="0" step="1" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 pr-8 outline-none focus:border-brand-primary dark:focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50" placeholder="100000">
+                                <span class="absolute right-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary font-medium">?</span>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tx Date</label>
-                                <input type="date" id="txDate" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                                <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Tx Date</label>
+                                <input type="date" id="txDate" required class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
-                                <input type="date" id="dueDate" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                                <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Due Date</label>
+                                <input type="date" id="dueDate" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-                            <input type="text" id="notes" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="Optional">
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Notes</label>
+                            <input type="text" id="notes" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50" placeholder="Optional">
                         </div>
                         
                         <div class="flex gap-2 mt-2">
-                            <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            <button type="submit" id="submitBtn" class="flex-1 bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
                                 Add Record
                             </button>
-                            <button type="button" id="cancelBtn" onclick="cancelEdit()" class="hidden flex-1 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-100 font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            <button type="button" id="cancelBtn" onclick="cancelEdit()" class="hidden flex-1 bg-light-border dark:bg-dark-border hover:opacity-80 text-light-textPrimary dark:text-dark-textPrimary font-semibold py-2.5 rounded-lg transition shadow-sm">
                                 Cancel
                             </button>
                         </div>
@@ -133,21 +163,21 @@
                 </div>
 
                 <!-- Ledger View -->
-                <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-4 mb-4 gap-4">
-                        <h3 class="text-lg font-semibold dark:text-white">Ledger View</h3>
+                <div class="lg:col-span-2 bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-light-border dark:border-dark-border pb-4 mb-4 gap-4">
+                        <h3 class="text-lg font-semibold text-light-textPrimary dark:text-dark-textPrimary">Ledger View</h3>
                         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                            <select id="monthFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none font-medium">
+                            <select id="monthFilter" onchange="render()" class="border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none font-medium focus:border-brand-primary">
                                 <option value="all">All Time</option>
                             </select>
-                            <select id="statusFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none">
+                            <select id="statusFilter" onchange="render()" class="border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none focus:border-brand-primary">
                                 <option value="all">All Statuses</option>
                                 <option value="active">Active Only</option>
                                 <option value="settled">Settled Only</option>
                             </select>
                             <div class="relative flex-1 sm:flex-initial">
-                                <span class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                <input type="text" id="searchInput" oninput="render()" class="w-full sm:w-36 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 pl-9 text-xs outline-none" placeholder="Search...">
+                                <span class="absolute left-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="searchInput" oninput="render()" class="w-full sm:w-36 border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 pl-9 text-xs outline-none focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50" placeholder="Search...">
                             </div>
                         </div>
                     </div>
@@ -155,7 +185,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[500px]">
                             <thead>
-                                <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-y border-slate-100 dark:border-slate-700">
+                                <tr class="bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary text-xs uppercase tracking-wider border-y border-light-border dark:border-dark-border">
                                     <th class="p-3 font-semibold">Status / Date</th>
                                     <th class="p-3 font-semibold">Entity</th>
                                     <th class="p-3 font-semibold">Details</th>
@@ -163,19 +193,19 @@
                                     <th class="p-3 font-semibold text-center">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="ledgerBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm hidden">
+                            <tbody id="ledgerBody" class="divide-y divide-light-border dark:divide-dark-border text-sm hidden">
                                 <!-- Injected dynamically -->
                             </tbody>
                         </table>
                         
-                        <div id="loadingState" class="flex flex-col items-center justify-center py-16 text-slate-400">
-                            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-indigo-500"></i>
-                            <p class="font-medium text-slate-600 dark:text-slate-300">Syncing database...</p>
+                        <div id="loadingState" class="flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
+                            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-primary"></i>
+                            <p class="font-medium">Syncing database...</p>
                         </div>
 
-                        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
-                            <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300 dark:text-slate-600"></i>
-                            <p class="font-semibold text-slate-600 dark:text-slate-400">No records found</p>
+                        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
+                            <i class="fa-solid fa-folder-open text-5xl mb-4 opacity-50"></i>
+                            <p class="font-semibold">No records found</p>
                         </div>
                     </div>
                 </div>
@@ -224,26 +254,21 @@
         // ==========================================
         // AUTHENTICATION LOGIC
         // ==========================================
-        
-        // Listen for login/logout events
         supabaseClient.auth.onAuthStateChange((event, session) => {
             const loginContainer = document.getElementById('loginContainer');
             const appContainer = document.getElementById('appContainer');
             const userInfo = document.getElementById('userInfo');
 
             if (session) {
-                // User is Logged In
                 currentUser = session.user;
                 loginContainer.classList.add('hidden');
                 appContainer.classList.remove('hidden');
                 
-                // Display GitHub username if available
                 const githubName = session.user.user_metadata?.user_name || session.user.email;
                 userInfo.textContent = `Hello, ${githubName}`;
                 
                 fetchDebts();
             } else {
-                // User is Logged Out
                 currentUser = null;
                 loginContainer.classList.remove('hidden');
                 appContainer.classList.add('hidden');
@@ -251,9 +276,7 @@
         });
 
         async function signInWithGithub() {
-            const { error } = await supabaseClient.auth.signInWithOAuth({
-                provider: 'github',
-            });
+            const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'github' });
             if (error) alert(error.message);
         }
 
@@ -263,7 +286,7 @@
         }
 
         // ==========================================
-        // Database Operations & Rendering (Unchanged)
+        // Database Operations & Rendering
         // ==========================================
         async function fetchDebts() {
             document.getElementById('loadingState').classList.remove('hidden');
@@ -349,41 +372,45 @@
                 const isEditing = editingId === debt.id;
                 
                 tr.className = `transition group 
-                    ${debt.paid ? 'bg-slate-50/50 dark:bg-slate-900/30' : 'hover:bg-slate-50/80 dark:hover:bg-slate-700/30'} 
-                    ${isEditing ? 'bg-indigo-50/50 dark:bg-indigo-900/20 outline outline-1 outline-indigo-200 dark:outline-indigo-700' : ''}`;
+                    ${debt.paid ? 'bg-light-bg/50 dark:bg-dark-bg/50' : 'hover:bg-light-bg dark:hover:bg-dark-bg'} 
+                    ${isEditing ? 'bg-brand-primary/5 dark:bg-brand-primary/10 outline outline-1 outline-brand-primary/30' : ''}`;
                 
                 const badgeColor = debt.paid 
-                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600' 
-                    : (debt.type === 'owed' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800');
+                    ? 'bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary border border-light-border dark:border-dark-border' 
+                    : (debt.type === 'owed' ? 'bg-brand-positive/10 text-brand-positive border border-brand-positive/30' : 'bg-brand-negative/10 text-brand-negative border border-brand-negative/30');
                 
                 const statusLabel = debt.paid ? 'Settled' : (debt.type === 'owed' ? 'Owed to Me' : 'I Owe');
-                const amountColor = debt.paid ? 'text-slate-400 dark:text-slate-500 line-through' : (debt.type === 'owed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400');
+                
+                const amountColor = debt.paid 
+                    ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70' 
+                    : (debt.type === 'owed' ? 'text-brand-positive' : 'text-brand-negative');
+                    
                 const displayDate = debt.transaction_date || debt.created_at.split('T')[0];
                 const amountDisplay = (debt.type === 'owe' && !debt.paid ? '-' : (debt.type === 'owed' && !debt.paid ? '+' : '')) + formatVND(Number(debt.amount));
 
                 tr.innerHTML = `
                     <td class="p-3">
                         <div class="flex flex-col items-start gap-1">
-                            <span class="px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded-full border ${badgeColor}">${statusLabel}</span>
-                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">${displayDate}</span>
+                            <span class="px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded-full ${badgeColor}">${statusLabel}</span>
+                            <span class="text-xs text-light-textSecondary dark:text-dark-textSecondary font-medium">${displayDate}</span>
                         </div>
                     </td>
-                    <td class="p-3 font-semibold text-slate-800 dark:text-slate-200 ${debt.paid ? 'text-slate-400 dark:text-slate-500 line-through' : ''}">
+                    <td class="p-3 font-semibold text-light-textPrimary dark:text-dark-textPrimary ${debt.paid ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70' : ''}">
                         ${escapeHTML(debt.person)}
                     </td>
-                    <td class="p-3 text-slate-500 dark:text-slate-400">
+                    <td class="p-3 text-light-textSecondary dark:text-dark-textSecondary">
                         <div class="truncate max-w-[180px] text-xs font-medium">${escapeHTML(debt.notes || '-')}</div>
-                        ${debt.due_date ? `<div class="text-[10px] text-rose-400 dark:text-rose-500 mt-1 font-semibold uppercase tracking-wider">Due: ${debt.due_date}</div>` : ''}
+                        ${debt.due_date ? `<div class="text-[10px] text-brand-warning mt-1 font-semibold uppercase tracking-wider">Due: ${debt.due_date}</div>` : ''}
                     </td>
                     <td class="p-3 font-bold text-right text-sm ${amountColor}">${amountDisplay}</td>
                     <td class="p-3 text-center space-x-2 whitespace-nowrap">
-                        <button onclick="togglePaid('${debt.id}')" class="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition" title="Toggle Status">
-                            <i class="fa-solid ${debt.paid ? 'fa-rotate-left hover:text-emerald-600' : 'fa-circle-check'}"></i>
+                        <button onclick="togglePaid('${debt.id}')" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-positive transition" title="Toggle Status">
+                            <i class="fa-solid ${debt.paid ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
                         </button>
-                        <button onclick="editDebt('${debt.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Edit Record">
+                        <button onclick="editDebt('${debt.id}')" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-primary transition" title="Edit Record">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button onclick="deleteDebt('${debt.id}')" class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition" title="Delete">
+                        <button onclick="deleteDebt('${debt.id}')" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-negative transition" title="Delete">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
@@ -397,7 +424,7 @@
             
             const netEl = document.getElementById('netBalance');
             netEl.textContent = formatVND(net);
-            netEl.className = `text-3xl font-bold ${net > 0 ? 'text-emerald-600 dark:text-emerald-400' : (net < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-white')}`;
+            netEl.className = `text-3xl font-bold ${net > 0 ? 'text-brand-positive' : (net < 0 ? 'text-brand-negative' : 'text-light-textPrimary dark:text-dark-textPrimary')}`;
 
             const periodText = filterMonth === 'all' ? '(All Time)' : `(${document.getElementById('monthFilter').options[document.getElementById('monthFilter').selectedIndex].text})`;
             document.querySelectorAll('.period-label').forEach(el => el.textContent = periodText);
@@ -458,7 +485,7 @@
             document.getElementById('formTitle').textContent = 'Update Transaction';
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.textContent = 'Save Changes';
-            submitBtn.className = 'flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 rounded-lg transition';
+            
             document.getElementById('cancelBtn').classList.remove('hidden');
             
             document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
@@ -473,7 +500,7 @@
             document.getElementById('formTitle').textContent = 'Log Transaction';
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.textContent = 'Add Record';
-            submitBtn.className = 'flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition';
+            
             document.getElementById('cancelBtn').classList.add('hidden');
             render(); 
         }
