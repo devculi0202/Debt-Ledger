@@ -3,153 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debt Ledger MVP - Supabase</title>
-    <!-- Tailwind & Configuration -->
+    <title>Debt Ledger - Secure</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class', }</script>
-    
-    <!-- Supabase JS Client via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Icons & Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        body, div, table, tr, th, td, span, input, select, button {
-            transition-property: background-color, border-color, color, fill, stroke;
+        .transition-all-custom {
+            transition-property: background-color, border-color, color, fill, stroke, opacity;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 200ms;
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 min-h-screen">
-    <div class="max-w-6xl mx-auto space-y-6">
-        
-        <!-- Header -->
-        <div class="flex flex-col sm:flex-row justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 gap-4">
-            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
-                <i class="fa-solid fa-scale-balanced text-indigo-600 dark:text-indigo-400 mr-2"></i>Debt Ledger
-            </h1>
-            <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-full transition shadow-sm border border-slate-200 dark:border-slate-600" title="Toggle Dark Mode">
-                <i id="themeIcon" class="fa-solid fa-moon"></i>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-all-custom">
+
+    <!-- ========================================== -->
+    <!-- AUTHENTICATION PAGE (Visible when logged out)-->
+    <!-- ========================================== -->
+    <div id="loginContainer" class="hidden min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 p-8 md:p-12 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 max-w-md w-full text-center space-y-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 mb-2">
+                <i class="fa-solid fa-scale-balanced text-3xl text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">Welcome Back</h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-2 text-sm">Sign in to manage your financial ledgers.</p>
+            </div>
+            
+            <button onclick="signInWithGithub()" class="w-full flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-semibold py-3 px-4 rounded-xl transition shadow-md">
+                <i class="fa-brands fa-github text-xl"></i>
+                Continue with GitHub
             </button>
         </div>
+    </div>
 
-        <!-- Summary KPI Dashboard -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Net Position <span class="period-label font-normal text-xs ml-1"></span></p>
-                <h2 id="netBalance" class="text-3xl font-bold dark:text-white">0 ?</h2>
-            </div>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-emerald-500">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Receivables <span class="period-label font-normal text-xs ml-1"></span></p>
-                <h2 id="totalReceivables" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">0 ?</h2>
-            </div>
-            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-rose-500">
-                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Liabilities <span class="period-label font-normal text-xs ml-1"></span></p>
-                <h2 id="totalLiabilities" class="text-3xl font-bold text-rose-600 dark:text-rose-400">0 ?</h2>
-            </div>
-        </div>
-
-        <!-- Main Layout Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- ========================================== -->
+    <!-- MAIN APPLICATION (Visible when logged in)  -->
+    <!-- ========================================== -->
+    <div id="appContainer" class="hidden p-4 md:p-8">
+        <div class="max-w-6xl mx-auto space-y-6">
             
-            <!-- Log / Edit Transaction Form -->
-            <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit" id="formContainer">
-                <h3 id="formTitle" class="text-lg font-semibold mb-4 border-b border-slate-100 dark:border-slate-700 pb-2 dark:text-white">Log Transaction</h3>
-                <form id="debtForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type</label>
-                        <select id="type" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none">
-                            <option value="owed">Owed to Me (+)</option>
-                            <option value="owe">I Owe (-)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Entity</label>
-                        <input type="text" id="person" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="e.g., Alice">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount (VN?)</label>
-                        <div class="relative">
-                            <input type="number" id="amount" required min="0" step="1" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 pr-8 outline-none" placeholder="100000">
-                            <span class="absolute right-3 top-2.5 text-slate-400 font-medium">?</span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tx Date</label>
-                            <input type="date" id="txDate" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
-                            <input type="date" id="dueDate" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
-                        <input type="text" id="notes" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="Optional">
-                    </div>
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 gap-4">
+                <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
+                    <i class="fa-solid fa-scale-balanced text-indigo-600 dark:text-indigo-400 mr-2"></i>Debt Ledger
+                </h1>
+                <div class="flex items-center space-x-3">
+                    <div id="userInfo" class="text-sm font-medium text-slate-600 dark:text-slate-300 mr-2 hidden sm:block"></div>
                     
-                    <div class="flex gap-2 mt-2">
-                        <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
-                            Add Record
-                        </button>
-                        <button type="button" id="cancelBtn" onclick="cancelEdit()" class="hidden flex-1 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-100 font-semibold py-2.5 rounded-lg transition shadow-sm">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
+                    <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-full transition shadow-sm border border-slate-200 dark:border-slate-600" title="Toggle Dark Mode">
+                        <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    </button>
+                    
+                    <button onclick="signOut()" class="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 text-sm font-medium rounded-lg transition shadow-sm border border-rose-200 dark:border-rose-800">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sign Out
+                    </button>
+                </div>
             </div>
 
-            <!-- Interactive Ledger -->
-            <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-4 mb-4 gap-4">
-                    <h3 class="text-lg font-semibold dark:text-white">Ledger View</h3>
-                    
-                    <!-- Filter Controls -->
-                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <select id="monthFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none font-medium">
-                            <option value="all">All Time</option>
-                        </select>
-                        <select id="statusFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none">
-                            <option value="all">All Statuses</option>
-                            <option value="active">Active Only</option>
-                            <option value="settled">Settled Only</option>
-                        </select>
-                        <div class="relative flex-1 sm:flex-initial">
-                            <span class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
-                            <input type="text" id="searchInput" oninput="render()" class="w-full sm:w-36 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 pl-9 text-xs outline-none" placeholder="Search...">
+            <!-- Summary KPI Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Net Position <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="netBalance" class="text-3xl font-bold dark:text-white">0 ?</h2>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-emerald-500">
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Receivables <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="totalReceivables" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">0 ?</h2>
+                </div>
+                <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-rose-500">
+                    <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Liabilities <span class="period-label font-normal text-xs ml-1"></span></p>
+                    <h2 id="totalLiabilities" class="text-3xl font-bold text-rose-600 dark:text-rose-400">0 ?</h2>
+                </div>
+            </div>
+
+            <!-- Main Layout Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Log / Edit Form -->
+                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit" id="formContainer">
+                    <h3 id="formTitle" class="text-lg font-semibold mb-4 border-b border-slate-100 dark:border-slate-700 pb-2 dark:text-white">Log Transaction</h3>
+                    <form id="debtForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type</label>
+                            <select id="type" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none">
+                                <option value="owed">Owed to Me (+)</option>
+                                <option value="owe">I Owe (-)</option>
+                            </select>
                         </div>
-                    </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Entity</label>
+                            <input type="text" id="person" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="e.g., Alice">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount (VN?)</label>
+                            <div class="relative">
+                                <input type="number" id="amount" required min="0" step="1" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 pr-8 outline-none" placeholder="100000">
+                                <span class="absolute right-3 top-2.5 text-slate-400 font-medium">?</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tx Date</label>
+                                <input type="date" id="txDate" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                                <input type="date" id="dueDate" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+                            <input type="text" id="notes" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="Optional">
+                        </div>
+                        
+                        <div class="flex gap-2 mt-2">
+                            <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                                Add Record
+                            </button>
+                            <button type="button" id="cancelBtn" onclick="cancelEdit()" class="hidden flex-1 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-100 font-semibold py-2.5 rounded-lg transition shadow-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse min-w-[500px]">
-                        <thead>
-                            <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-y border-slate-100 dark:border-slate-700">
-                                <th class="p-3 font-semibold">Status / Date</th>
-                                <th class="p-3 font-semibold">Entity</th>
-                                <th class="p-3 font-semibold">Details</th>
-                                <th class="p-3 font-semibold text-right">Amount (VN?)</th>
-                                <th class="p-3 font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ledgerBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm hidden">
-                            <!-- Injected dynamically -->
-                        </tbody>
-                    </table>
-                    
-                    <!-- Loading / Empty States -->
-                    <div id="loadingState" class="flex flex-col items-center justify-center py-16 text-slate-400">
-                        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-indigo-500"></i>
-                        <p class="font-medium text-slate-600 dark:text-slate-300">Syncing with Supabase...</p>
+                <!-- Ledger View -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-4 mb-4 gap-4">
+                        <h3 class="text-lg font-semibold dark:text-white">Ledger View</h3>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <select id="monthFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none font-medium">
+                                <option value="all">All Time</option>
+                            </select>
+                            <select id="statusFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none">
+                                <option value="all">All Statuses</option>
+                                <option value="active">Active Only</option>
+                                <option value="settled">Settled Only</option>
+                            </select>
+                            <div class="relative flex-1 sm:flex-initial">
+                                <span class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <input type="text" id="searchInput" oninput="render()" class="w-full sm:w-36 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 pl-9 text-xs outline-none" placeholder="Search...">
+                            </div>
+                        </div>
                     </div>
 
-                    <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
-                        <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300 dark:text-slate-600"></i>
-                        <p class="font-semibold text-slate-600 dark:text-slate-400">No records found</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-y border-slate-100 dark:border-slate-700">
+                                    <th class="p-3 font-semibold">Status / Date</th>
+                                    <th class="p-3 font-semibold">Entity</th>
+                                    <th class="p-3 font-semibold">Details</th>
+                                    <th class="p-3 font-semibold text-right">Amount (VN?)</th>
+                                    <th class="p-3 font-semibold text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm hidden">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                        
+                        <div id="loadingState" class="flex flex-col items-center justify-center py-16 text-slate-400">
+                            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-indigo-500"></i>
+                            <p class="font-medium text-slate-600 dark:text-slate-300">Syncing database...</p>
+                        </div>
+
+                        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+                            <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300 dark:text-slate-600"></i>
+                            <p class="font-semibold text-slate-600 dark:text-slate-400">No records found</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -159,7 +186,7 @@
     <!-- Script Engine -->
     <script>
         // ==========================================
-        // 1. SUPABASE CONFIGURATION - UPDATE THESE!
+        // 1. SUPABASE CONFIGURATION
         // ==========================================
         const SUPABASE_URL = 'https://fceifsdytukqhesnkyyq.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_nsMMasjawPFo_fe9hGgjWQ_3lP0DxA7';
@@ -167,11 +194,14 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // ==========================================
-        // App State
+        // App State & UI Logic
         // ==========================================
         let debts = [];
         let editingId = null;
+        let currentUser = null;
+        
         document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+        const formatVND = (amount) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
         // Dark Mode Logic
         const html = document.documentElement;
@@ -191,12 +221,55 @@
             }
         }
 
-        const formatVND = (amount) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        // ==========================================
+        // AUTHENTICATION LOGIC
+        // ==========================================
+        
+        // Listen for login/logout events
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const loginContainer = document.getElementById('loginContainer');
+            const appContainer = document.getElementById('appContainer');
+            const userInfo = document.getElementById('userInfo');
+
+            if (session) {
+                // User is Logged In
+                currentUser = session.user;
+                loginContainer.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                
+                // Display GitHub username if available
+                const githubName = session.user.user_metadata?.user_name || session.user.email;
+                userInfo.textContent = `Hello, ${githubName}`;
+                
+                fetchDebts();
+            } else {
+                // User is Logged Out
+                currentUser = null;
+                loginContainer.classList.remove('hidden');
+                appContainer.classList.add('hidden');
+            }
+        });
+
+        async function signInWithGithub() {
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+                provider: 'github',
+            });
+            if (error) alert(error.message);
+        }
+
+        async function signOut() {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) alert(error.message);
+        }
 
         // ==========================================
-        // Database Operations
+        // Database Operations & Rendering (Unchanged)
         // ==========================================
         async function fetchDebts() {
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('ledgerBody').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
             const { data, error } = await supabaseClient
                 .from('debts')
                 .select('*')
@@ -207,7 +280,7 @@
 
             if (error) {
                 console.error('Error fetching data:', error);
-                alert("Database connection failed. Check your Supabase URL and Key.");
+                alert("Database connection failed.");
                 return;
             }
 
@@ -216,12 +289,6 @@
             render();
         }
 
-        // Initialize App
-        fetchDebts();
-
-        // ==========================================
-        // UI Rendering Logic
-        // ==========================================
         function populateMonthDropdown() {
             const monthFilter = document.getElementById('monthFilter');
             const currentVal = monthFilter.value;
@@ -324,7 +391,6 @@
                 ledgerBody.appendChild(tr);
             });
 
-            // Update Summaries
             const net = totalReceivables - totalLiabilities;
             document.getElementById('totalReceivables').textContent = formatVND(totalReceivables);
             document.getElementById('totalLiabilities').textContent = formatVND(totalLiabilities);
@@ -337,9 +403,6 @@
             document.querySelectorAll('.period-label').forEach(el => el.textContent = periodText);
         }
 
-        // ==========================================
-        // Actions & Optimistic Sync
-        // ==========================================
         document.getElementById('debtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -361,7 +424,6 @@
             };
 
             if (editingId) {
-                // Keep the current paid status on update
                 payload.paid = debts.find(d => d.id === editingId).paid; 
                 const { error } = await supabaseClient.from('debts').update(payload).eq('id', editingId);
                 if (!error) cancelEdit();
@@ -378,7 +440,7 @@
                 document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
             }
             
-            await fetchDebts(); // Refresh UI with server data
+            await fetchDebts(); 
         });
 
         function editDebt(id) {
@@ -419,15 +481,14 @@
         async function togglePaid(id) {
             const debt = debts.find(d => d.id === id);
             if (debt) {
-                // Optimistic UI Update
                 const newStatus = !debt.paid;
                 debt.paid = newStatus;
                 render(); 
 
                 const { error } = await supabaseClient.from('debts').update({ paid: newStatus }).eq('id', id);
                 if (error) {
-                    console.error('Failed to sync status', error);
-                    debt.paid = !newStatus; // revert on failure
+                    console.error('Failed to sync', error);
+                    debt.paid = !newStatus; 
                     render();
                 }
             }
@@ -437,7 +498,6 @@
             if (confirm('Delete this record? Action cannot be undone.')) {
                 if (editingId === id) cancelEdit(); 
                 
-                // Optimistic UI Update
                 const backupDebts = [...debts];
                 debts = debts.filter(d => d.id !== id);
                 render();
@@ -445,7 +505,7 @@
                 const { error } = await supabaseClient.from('debts').delete().eq('id', id);
                 if (error) {
                     console.error('Failed to delete', error);
-                    debts = backupDebts; // revert on failure
+                    debts = backupDebts; 
                     render();
                 } else {
                     populateMonthDropdown();
