@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Ledger MVP - Supabase</title>
+    <!-- Tailwind & Configuration -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class', }</script>
+    
+    <!-- Supabase JS Client via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Icons & Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        body, div, table, tr, th, td, span, input, select, button {
+            transition-property: background-color, border-color, color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 200ms;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 md:p-8 min-h-screen">
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 gap-4">
+            <h1 class="text-2xl font-bold text-slate-800 dark:text-white">
+                <i class="fa-solid fa-scale-balanced text-indigo-600 dark:text-indigo-400 mr-2"></i>Debt Ledger
+            </h1>
+            <button onclick="toggleDarkMode()" class="w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-full transition shadow-sm border border-slate-200 dark:border-slate-600" title="Toggle Dark Mode">
+                <i id="themeIcon" class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+
+        <!-- Summary KPI Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Net Position <span class="period-label font-normal text-xs ml-1"></span></p>
+                <h2 id="netBalance" class="text-3xl font-bold dark:text-white">0 ?</h2>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-emerald-500">
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Receivables <span class="period-label font-normal text-xs ml-1"></span></p>
+                <h2 id="totalReceivables" class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">0 ?</h2>
+            </div>
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 border-b-4 border-b-rose-500">
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Liabilities <span class="period-label font-normal text-xs ml-1"></span></p>
+                <h2 id="totalLiabilities" class="text-3xl font-bold text-rose-600 dark:text-rose-400">0 ?</h2>
+            </div>
+        </div>
+
+        <!-- Main Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Log / Edit Transaction Form -->
+            <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit" id="formContainer">
+                <h3 id="formTitle" class="text-lg font-semibold mb-4 border-b border-slate-100 dark:border-slate-700 pb-2 dark:text-white">Log Transaction</h3>
+                <form id="debtForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type</label>
+                        <select id="type" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none">
+                            <option value="owed">Owed to Me (+)</option>
+                            <option value="owe">I Owe (-)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Entity</label>
+                        <input type="text" id="person" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="e.g., Alice">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Amount (VN?)</label>
+                        <div class="relative">
+                            <input type="number" id="amount" required min="0" step="1" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 pr-8 outline-none" placeholder="100000">
+                            <span class="absolute right-3 top-2.5 text-slate-400 font-medium">?</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tx Date</label>
+                            <input type="date" id="txDate" required class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                            <input type="date" id="dueDate" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+                        <input type="text" id="notes" class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2.5 outline-none" placeholder="Optional">
+                    </div>
+                    
+                    <div class="flex gap-2 mt-2">
+                        <button type="submit" id="submitBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            Add Record
+                        </button>
+                        <button type="button" id="cancelBtn" onclick="cancelEdit()" class="hidden flex-1 bg-slate-200 dark:bg-slate-600 hover:bg-slate-300 dark:hover:bg-slate-500 text-slate-700 dark:text-slate-100 font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Interactive Ledger -->
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 dark:border-slate-700 pb-4 mb-4 gap-4">
+                    <h3 class="text-lg font-semibold dark:text-white">Ledger View</h3>
+                    
+                    <!-- Filter Controls -->
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <select id="monthFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none font-medium">
+                            <option value="all">All Time</option>
+                        </select>
+                        <select id="statusFilter" onchange="render()" class="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 text-xs outline-none">
+                            <option value="all">All Statuses</option>
+                            <option value="active">Active Only</option>
+                            <option value="settled">Settled Only</option>
+                        </select>
+                        <div class="relative flex-1 sm:flex-initial">
+                            <span class="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500 text-sm"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" id="searchInput" oninput="render()" class="w-full sm:w-36 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg p-2 pl-9 text-xs outline-none" placeholder="Search...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-y border-slate-100 dark:border-slate-700">
+                                <th class="p-3 font-semibold">Status / Date</th>
+                                <th class="p-3 font-semibold">Entity</th>
+                                <th class="p-3 font-semibold">Details</th>
+                                <th class="p-3 font-semibold text-right">Amount (VN?)</th>
+                                <th class="p-3 font-semibold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerBody" class="divide-y divide-slate-100 dark:divide-slate-700 text-sm hidden">
+                            <!-- Injected dynamically -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Loading / Empty States -->
+                    <div id="loadingState" class="flex flex-col items-center justify-center py-16 text-slate-400">
+                        <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-indigo-500"></i>
+                        <p class="font-medium text-slate-600 dark:text-slate-300">Syncing with Supabase...</p>
+                    </div>
+
+                    <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+                        <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300 dark:text-slate-600"></i>
+                        <p class="font-semibold text-slate-600 dark:text-slate-400">No records found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Engine -->
+    <script>
+        // ==========================================
+        // 1. SUPABASE CONFIGURATION - UPDATE THESE!
+        // ==========================================
+        const SUPABASE_URL = 'https://fceifsdytukqhesnkyyq.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_nsMMasjawPFo_fe9hGgjWQ_3lP0DxA7';
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==========================================
+        // App State
+        // ==========================================
+        let debts = [];
+        let editingId = null;
+        document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+
+        // Dark Mode Logic
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('themeIcon');
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            themeIcon.classList.replace('fa-moon', 'fa-sun');
+        }
+        function toggleDarkMode() {
+            html.classList.toggle('dark');
+            if (html.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.replace('fa-moon', 'fa-sun');
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+
+        const formatVND = (amount) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+        // ==========================================
+        // Database Operations
+        // ==========================================
+        async function fetchDebts() {
+            const { data, error } = await supabaseClient
+                .from('debts')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('ledgerBody').classList.remove('hidden');
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                alert("Database connection failed. Check your Supabase URL and Key.");
+                return;
+            }
+
+            debts = data || [];
+            populateMonthDropdown();
+            render();
+        }
+
+        // Initialize App
+        fetchDebts();
+
+        // ==========================================
+        // UI Rendering Logic
+        // ==========================================
+        function populateMonthDropdown() {
+            const monthFilter = document.getElementById('monthFilter');
+            const currentVal = monthFilter.value;
+            const months = new Set();
+            
+            debts.forEach(d => {
+                const dateStr = d.transaction_date || d.created_at.split('T')[0];
+                months.add(dateStr.substring(0, 7));
+            });
+            
+            const sortedMonths = Array.from(months).sort().reverse();
+            monthFilter.innerHTML = '<option value="all">All Time</option>';
+            
+            sortedMonths.forEach(m => {
+                const [year, month] = m.split('-');
+                const dateObj = new Date(year, month - 1);
+                monthFilter.innerHTML += `<option value="${m}">${dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} ${year}</option>`;
+            });
+            
+            if (sortedMonths.includes(currentVal)) monthFilter.value = currentVal;
+        }
+
+        function render() {
+            const ledgerBody = document.getElementById('ledgerBody');
+            const emptyState = document.getElementById('emptyState');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const filterStatus = document.getElementById('statusFilter').value;
+            const filterMonth = document.getElementById('monthFilter').value;
+            
+            let totalReceivables = 0;
+            let totalLiabilities = 0;
+
+            ledgerBody.innerHTML = '';
+
+            const filteredDebts = debts.filter(debt => {
+                const tDateStr = debt.transaction_date || debt.created_at.split('T')[0];
+                const dMonth = tDateStr.substring(0, 7);
+                
+                const matchesMonth = filterMonth === 'all' || dMonth === filterMonth;
+                const matchesSearch = debt.person.toLowerCase().includes(searchQuery) || (debt.notes && debt.notes.toLowerCase().includes(searchQuery));
+                const matchesStatus = filterStatus === 'all' || 
+                                     (filterStatus === 'active' && !debt.paid) || 
+                                     (filterStatus === 'settled' && debt.paid);
+                
+                return matchesMonth && matchesSearch && matchesStatus;
+            });
+
+            if (filteredDebts.length === 0) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            filteredDebts.forEach(debt => {
+                if (!debt.paid) {
+                    if (debt.type === 'owed') totalReceivables += Number(debt.amount);
+                    if (debt.type === 'owe') totalLiabilities += Number(debt.amount);
+                }
+
+                const tr = document.createElement('tr');
+                const isEditing = editingId === debt.id;
+                
+                tr.className = `transition group 
+                    ${debt.paid ? 'bg-slate-50/50 dark:bg-slate-900/30' : 'hover:bg-slate-50/80 dark:hover:bg-slate-700/30'} 
+                    ${isEditing ? 'bg-indigo-50/50 dark:bg-indigo-900/20 outline outline-1 outline-indigo-200 dark:outline-indigo-700' : ''}`;
+                
+                const badgeColor = debt.paid 
+                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600' 
+                    : (debt.type === 'owed' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-800');
+                
+                const statusLabel = debt.paid ? 'Settled' : (debt.type === 'owed' ? 'Owed to Me' : 'I Owe');
+                const amountColor = debt.paid ? 'text-slate-400 dark:text-slate-500 line-through' : (debt.type === 'owed' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400');
+                const displayDate = debt.transaction_date || debt.created_at.split('T')[0];
+                const amountDisplay = (debt.type === 'owe' && !debt.paid ? '-' : (debt.type === 'owed' && !debt.paid ? '+' : '')) + formatVND(Number(debt.amount));
+
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="flex flex-col items-start gap-1">
+                            <span class="px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide rounded-full border ${badgeColor}">${statusLabel}</span>
+                            <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">${displayDate}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 font-semibold text-slate-800 dark:text-slate-200 ${debt.paid ? 'text-slate-400 dark:text-slate-500 line-through' : ''}">
+                        ${escapeHTML(debt.person)}
+                    </td>
+                    <td class="p-3 text-slate-500 dark:text-slate-400">
+                        <div class="truncate max-w-[180px] text-xs font-medium">${escapeHTML(debt.notes || '-')}</div>
+                        ${debt.due_date ? `<div class="text-[10px] text-rose-400 dark:text-rose-500 mt-1 font-semibold uppercase tracking-wider">Due: ${debt.due_date}</div>` : ''}
+                    </td>
+                    <td class="p-3 font-bold text-right text-sm ${amountColor}">${amountDisplay}</td>
+                    <td class="p-3 text-center space-x-2 whitespace-nowrap">
+                        <button onclick="togglePaid('${debt.id}')" class="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition" title="Toggle Status">
+                            <i class="fa-solid ${debt.paid ? 'fa-rotate-left hover:text-emerald-600' : 'fa-circle-check'}"></i>
+                        </button>
+                        <button onclick="editDebt('${debt.id}')" class="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition" title="Edit Record">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteDebt('${debt.id}')" class="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition" title="Delete">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                ledgerBody.appendChild(tr);
+            });
+
+            // Update Summaries
+            const net = totalReceivables - totalLiabilities;
+            document.getElementById('totalReceivables').textContent = formatVND(totalReceivables);
+            document.getElementById('totalLiabilities').textContent = formatVND(totalLiabilities);
+            
+            const netEl = document.getElementById('netBalance');
+            netEl.textContent = formatVND(net);
+            netEl.className = `text-3xl font-bold ${net > 0 ? 'text-emerald-600 dark:text-emerald-400' : (net < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-white')}`;
+
+            const periodText = filterMonth === 'all' ? '(All Time)' : `(${document.getElementById('monthFilter').options[document.getElementById('monthFilter').selectedIndex].text})`;
+            document.querySelectorAll('.period-label').forEach(el => el.textContent = periodText);
+        }
+
+        // ==========================================
+        // Actions & Optimistic Sync
+        // ==========================================
+        document.getElementById('debtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            const amt = parseInt(document.getElementById('amount').value);
+            if(isNaN(amt) || amt < 0) return alert("Vui lòng nh?p s? ti?n h?p l?");
+
+            const payload = {
+                type: document.getElementById('type').value,
+                person: document.getElementById('person').value.trim(),
+                amount: amt,
+                transaction_date: document.getElementById('txDate').value,
+                due_date: document.getElementById('dueDate').value || null,
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            if (editingId) {
+                // Keep the current paid status on update
+                payload.paid = debts.find(d => d.id === editingId).paid; 
+                const { error } = await supabaseClient.from('debts').update(payload).eq('id', editingId);
+                if (!error) cancelEdit();
+            } else {
+                payload.paid = false;
+                const { error } = await supabaseClient.from('debts').insert([payload]);
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+            
+            if(!editingId) {
+                e.target.reset();
+                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+            }
+            
+            await fetchDebts(); // Refresh UI with server data
+        });
+
+        function editDebt(id) {
+            const debt = debts.find(d => d.id === id);
+            if (!debt) return;
+            editingId = id;
+            
+            document.getElementById('type').value = debt.type;
+            document.getElementById('person').value = debt.person;
+            document.getElementById('amount').value = debt.amount;
+            document.getElementById('txDate').value = debt.transaction_date;
+            document.getElementById('dueDate').value = debt.due_date || '';
+            document.getElementById('notes').value = debt.notes || '';
+            
+            document.getElementById('formTitle').textContent = 'Update Transaction';
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Save Changes';
+            submitBtn.className = 'flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2.5 rounded-lg transition';
+            document.getElementById('cancelBtn').classList.remove('hidden');
+            
+            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+            render(); 
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById('debtForm').reset();
+            document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('formTitle').textContent = 'Log Transaction';
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Add Record';
+            submitBtn.className = 'flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition';
+            document.getElementById('cancelBtn').classList.add('hidden');
+            render(); 
+        }
+
+        async function togglePaid(id) {
+            const debt = debts.find(d => d.id === id);
+            if (debt) {
+                // Optimistic UI Update
+                const newStatus = !debt.paid;
+                debt.paid = newStatus;
+                render(); 
+
+                const { error } = await supabaseClient.from('debts').update({ paid: newStatus }).eq('id', id);
+                if (error) {
+                    console.error('Failed to sync status', error);
+                    debt.paid = !newStatus; // revert on failure
+                    render();
+                }
+            }
+        }
+
+        async function deleteDebt(id) {
+            if (confirm('Delete this record? Action cannot be undone.')) {
+                if (editingId === id) cancelEdit(); 
+                
+                // Optimistic UI Update
+                const backupDebts = [...debts];
+                debts = debts.filter(d => d.id !== id);
+                render();
+
+                const { error } = await supabaseClient.from('debts').delete().eq('id', id);
+                if (error) {
+                    console.error('Failed to delete', error);
+                    debts = backupDebts; // revert on failure
+                    render();
+                } else {
+                    populateMonthDropdown();
+                }
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+    </script>
+</body>
+</html>
