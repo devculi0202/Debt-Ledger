@@ -774,7 +774,11 @@
                 const dMonth = tDateStr.substring(0, 7);
                 
                 const matchesMonth = filterMonth === 'all' || dMonth === filterMonth;
-                const matchesSearch = debt.person.toLowerCase().includes(searchQuery) || (debt.notes && debt.notes.toLowerCase().includes(searchQuery));
+                // BUG FIX: Prevent error when debt.notes is null by using a safe check
+                const noteText = debt.notes ? debt.notes.toLowerCase() : '';
+                const personText = debt.person ? debt.person.toLowerCase() : '';
+                
+                const matchesSearch = personText.includes(searchQuery) || noteText.includes(searchQuery);
                 const matchesStatus = filterStatus === 'all' || 
                                      (filterStatus === 'active' && !debt.paid) || 
                                      (filterStatus === 'settled' && debt.paid);
@@ -883,7 +887,8 @@
                 transaction_date: document.getElementById('txDate').value,
                 due_date: document.getElementById('dueDate').value || null,
                 notes: document.getElementById('notes').value.trim(),
-                account_id: accountIdVal === 'none' ? null : accountIdVal
+                account_id: accountIdVal === 'none' ? null : accountIdVal,
+                user_id: currentUser.id // Ensure user_id is passed if RLS requires it
             };
 
             if (editingId) {
