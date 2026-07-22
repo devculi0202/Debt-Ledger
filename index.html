@@ -211,6 +211,103 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: EDIT TRANSACTION                    -->
+    <!-- ========================================== -->
+    <div id="editTransactionModal"
+        class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity px-4">
+        <div
+            class="bg-light-surface dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-light-border dark:border-dark-border overflow-hidden transform transition-all">
+            <div
+                class="p-5 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/50 dark:bg-dark-bg/50">
+                <h3 class="text-lg font-bold text-light-textPrimary dark:text-dark-textPrimary flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-brand-primary"></i> Update Transaction
+                </h3>
+                <button onclick="cancelEdit()"
+                    class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-negative dark:hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-border dark:hover:bg-dark-border">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="editDebtForm" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Type</label>
+                        <select id="editType"
+                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                            <option value="owe">I Owe (-)</option>
+                            <option value="owed">Owed to Me (+)</option>
+                        </select>
+                    </div>
+
+                    <div
+                        class="bg-brand-primary/5 dark:bg-brand-primary/10 p-3 rounded-lg border border-brand-primary/20">
+                        <label class="block text-sm font-bold text-brand-primary mb-1">
+                            <i class="fa-solid fa-link mr-1"></i> Link to Debt Account
+                        </label>
+                        <select id="editAccountId"
+                            class="w-full border border-brand-primary/30 bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 outline-none focus:border-brand-primary text-xs font-medium">
+                            <option value="none">-- General Transaction (Unlinked) --</option>
+                            <!-- Injected dynamically -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Entity</label>
+                        <input type="text" id="editPerson" required
+                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Amount
+                            (VNĐ)</label>
+                        <div class="relative">
+                            <input type="number" id="editAmount" required min="0" step="1"
+                                class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 pr-8 outline-none focus:border-brand-primary text-sm font-semibold">
+                            <span
+                                class="absolute right-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary font-medium">₫</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Tx
+                                Date</label>
+                            <input type="date" id="editTxDate" required
+                                class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Due
+                                Date</label>
+                            <input type="date" id="editDueDate"
+                                class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Notes</label>
+                        <input type="text" id="editNotes" placeholder="Optional"
+                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                    </div>
+
+                    <div class="pt-4 flex gap-3 border-t border-light-border dark:border-dark-border mt-4">
+                        <button type="button" onclick="cancelEdit()"
+                            class="flex-1 px-4 py-2.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border text-light-textPrimary dark:text-dark-textPrimary font-semibold rounded-lg hover:bg-light-border dark:hover:bg-dark-border transition shadow-sm">Cancel</button>
+                        <button type="submit" id="submitEditBtn"
+                            class="flex-1 bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MAIN APPLICATION (Visible when logged in)  -->
     <!-- ========================================== -->
     <div id="appContainer" class="hidden flex-1 flex h-screen w-full overflow-hidden">
@@ -442,12 +539,8 @@
 
                                 <div class="flex gap-2 mt-2">
                                     <button type="submit" id="submitBtn"
-                                        class="flex-1 bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                                        class="w-full bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
                                         Add Record
-                                    </button>
-                                    <button type="button" id="cancelBtn" onclick="cancelEdit()"
-                                        class="hidden flex-1 bg-light-border dark:bg-dark-border hover:opacity-80 text-light-textPrimary dark:text-dark-textPrimary font-semibold py-2.5 rounded-lg transition shadow-sm">
-                                        Cancel
                                     </button>
                                 </div>
                             </form>
@@ -687,7 +780,9 @@
 
         function updateAccountDropdown() {
             const select = document.getElementById('accountId');
+            const editSelect = document.getElementById('editAccountId');
             const currentVal = select.value;
+            const currentEditVal = editSelect ? editSelect.value : 'none';
 
             let optionsHtml = '<option value="none">-- General Transaction (Unlinked) --</option>';
 
@@ -699,6 +794,14 @@
             select.innerHTML = optionsHtml;
             if (currentVal && masterDebts.find(md => md.id === currentVal)) {
                 select.value = currentVal;
+            }
+
+            // Populate the modal dropdown too
+            if (editSelect) {
+                editSelect.innerHTML = optionsHtml;
+                if (currentEditVal && masterDebts.find(md => md.id === currentEditVal)) {
+                    editSelect.value = currentEditVal;
+                }
             }
         }
 
@@ -1012,6 +1115,7 @@
             document.querySelectorAll('.period-label').forEach(el => el.textContent = periodText);
         }
 
+        // ADD NEW TRANSACTION (Left Panel)
         document.getElementById('debtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -1021,7 +1125,11 @@
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
             const amt = parseInt(document.getElementById('amount').value);
-            if (isNaN(amt) || amt < 0) return alert("Vui lòng nhập số tiền hợp lệ");
+            if (isNaN(amt) || amt < 0) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                return alert("Vui lòng nhập số tiền hợp lệ");
+            }
 
             const accountIdVal = document.getElementById('accountId').value;
 
@@ -1032,30 +1140,69 @@
                 transaction_date: document.getElementById('txDate').value,
                 due_date: document.getElementById('dueDate').value || null,
                 notes: document.getElementById('notes').value.trim(),
-                account_id: accountIdVal === 'none' ? null : accountIdVal,
-                // user_id: currentUser.id // Ensure user_id is passed if RLS requires it
+                account_id: accountIdVal === 'none' ? null : accountIdVal
             };
 
-            if (editingId) {
-                payload.paid = debts.find(d => d.id === editingId).paid;
-                const { error } = await supabaseClient.from('debts').update(payload).eq('id', editingId);
-                if (!error) cancelEdit();
+            payload.paid = false;
+            const { error } = await supabaseClient.from('debts').insert([payload]);
+            
+            if (error) {
+                console.error("Error inserting", error);
+                alert("Database Error: " + error.message);
             } else {
-                payload.paid = false;
-                const { error } = await supabaseClient.from('debts').insert([payload]);
-                if (error) console.error("Error inserting", error);
+                e.target.reset();
+                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('accountId').value = accountIdVal; // Keep selected account
+                await fetchDebts();
             }
 
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
+        });
 
-            if (!editingId) {
-                e.target.reset();
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('accountId').value = accountIdVal; // Keep selected account
+        // UPDATE EXISTING TRANSACTION (Modal)
+        document.getElementById('editDebtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitEditBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            const amt = parseInt(document.getElementById('editAmount').value);
+            if (isNaN(amt) || amt < 0) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+                return alert("Vui lòng nhập số tiền hợp lệ");
             }
+            
+            const accountIdVal = document.getElementById('editAccountId').value;
 
-            await fetchDebts();
+            const payload = {
+                type: document.getElementById('editType').value,
+                person: document.getElementById('editPerson').value.trim(),
+                amount: amt,
+                transaction_date: document.getElementById('editTxDate').value,
+                due_date: document.getElementById('editDueDate').value || null,
+                notes: document.getElementById('editNotes').value.trim(),
+                account_id: accountIdVal === 'none' ? null : accountIdVal
+            };
+
+            if (editingId) {
+                payload.paid = debts.find(d => d.id === editingId).paid; 
+                const { error } = await supabaseClient.from('debts').update(payload).eq('id', editingId);
+                
+                if (error) {
+                    console.error("Update Error:", error);
+                    alert("Database Error: " + error.message);
+                } else {
+                    cancelEdit(); 
+                    await fetchDebts(); 
+                }
+            }
+            
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
         });
 
         function editDebt(id) {
@@ -1063,40 +1210,28 @@
             if (!debt) return;
             editingId = id;
 
-            document.getElementById('type').value = debt.type;
-            document.getElementById('person').value = debt.person;
-            document.getElementById('amount').value = debt.amount;
-            document.getElementById('txDate').value = debt.transaction_date;
-            document.getElementById('dueDate').value = debt.due_date || '';
-            document.getElementById('notes').value = debt.notes || '';
+            // Target the new modal inputs
+            document.getElementById('editType').value = debt.type;
+            document.getElementById('editPerson').value = debt.person;
+            document.getElementById('editAmount').value = debt.amount;
+            document.getElementById('editTxDate').value = debt.transaction_date;
+            document.getElementById('editDueDate').value = debt.due_date || '';
+            document.getElementById('editNotes').value = debt.notes || '';
 
             if (debt.account_id) {
-                document.getElementById('accountId').value = debt.account_id;
+                document.getElementById('editAccountId').value = debt.account_id;
             } else {
-                document.getElementById('accountId').value = 'none';
+                document.getElementById('editAccountId').value = 'none';
             }
-
-            document.getElementById('formTitle').textContent = 'Update Transaction';
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = 'Save Changes';
-
-            document.getElementById('cancelBtn').classList.remove('hidden');
-
-            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
-            render();
+            
+            toggleModal('editTransactionModal', true);
+            render(); // Keep the row highlighted while modal is open
         }
 
         function cancelEdit() {
             editingId = null;
-            document.getElementById('debtForm').reset();
-            document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('accountId').value = 'none';
-
-            document.getElementById('formTitle').textContent = 'Log Transaction';
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = 'Add Record';
-
-            document.getElementById('cancelBtn').classList.add('hidden');
+            document.getElementById('editDebtForm').reset();
+            toggleModal('editTransactionModal', false);
             render();
         }
 
