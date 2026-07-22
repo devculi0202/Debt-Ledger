@@ -380,6 +380,7 @@
                                         <tr class="bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary text-xs uppercase tracking-wider border-y border-light-border dark:border-dark-border">
                                             <th class="p-3 font-semibold w-32">Status / Date</th>
                                             <th class="p-3 font-semibold">Entity</th>
+                                            <th class="p-3 font-semibold">Link to Debt Account</th>
                                             <th class="p-3 font-semibold">Details</th>
                                             <th class="p-3 font-semibold text-right">Amount (VNĐ)</th>
                                             <th class="p-3 font-semibold text-center">Actions</th>
@@ -816,11 +817,11 @@
                 const amountDisplay = (debt.type === 'owe' && !debt.paid ? '-' : (debt.type === 'owed' && !debt.paid ? '+' : '')) + formatVND(Number(debt.amount));
 
                 // Find linked account name if any
-                let linkTagHtml = '';
+                let linkTagHtml = '<span class="text-xs text-light-textSecondary/50 dark:text-dark-textSecondary/50">-</span>';
                 if (debt.account_id && masterDebts.length > 0) {
                     const linkedAcc = masterDebts.find(md => md.id == debt.account_id);
                     if (linkedAcc) {
-                        linkTagHtml = `<div class="mt-1"><span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-brand-primary/10 text-brand-primary text-[9px] font-bold border border-brand-primary/20 ${debt.paid ? 'opacity-50' : ''}"><i class="fa-solid fa-link"></i> ${escapeHTML(linkedAcc.name)}</span></div>`;
+                        linkTagHtml = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-primary/10 text-brand-primary text-[11px] font-bold border border-brand-primary/20 ${debt.paid ? 'opacity-50' : ''}"><i class="fa-solid fa-link"></i> ${escapeHTML(linkedAcc.name)}</span>`;
                     }
                 }
 
@@ -833,6 +834,8 @@
                     </td>
                     <td class="p-3 font-semibold text-light-textPrimary dark:text-dark-textPrimary ${debt.paid ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70' : ''}">
                         ${escapeHTML(debt.person)}
+                    </td>
+                    <td class="p-3 align-middle whitespace-nowrap">
                         ${linkTagHtml}
                     </td>
                     <td class="p-3 text-light-textSecondary dark:text-dark-textSecondary">
