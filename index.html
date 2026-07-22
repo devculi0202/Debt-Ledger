@@ -936,7 +936,7 @@
                         
                         <div class="bg-light-bg/50 dark:bg-dark-bg/50 px-6 py-4 border-t border-light-border dark:border-dark-border flex justify-between items-center">
                             <span class="text-sm text-light-textSecondary dark:text-dark-textSecondary"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${allLinkedTransactions.length} logs (${settledTransactions.length} settled).</span>
-                            <button onclick="filterTransactionsByAccount('${account.id}')" class="text-sm font-semibold text-brand-primary hover:underline flex items-center">Log Payment <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i></button>
+                            <button onclick="filterTransactionsByAccount('${account.id}')" class="text-sm font-semibold text-brand-primary hover:underline flex items-center">View Ledger <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i></button>
                         </div>
                     </div>
                 `;
@@ -1060,11 +1060,22 @@
             }
         }
 
-        // Clicking "Log Payment" on a Debt Account Card
+        // Clicking "View Ledger" on a Debt Account Card
         function filterTransactionsByAccount(accountId) {
             switchTab('debt-details');
-            openAddTransactionModal(); // Pop open the add record modal automatically
-            document.getElementById('newAccountId').value = accountId; // Pre-select the specific account
+            
+            // 1. Set filters to "All Time" and "Settled Only" (Paid)
+            document.getElementById('monthFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'settled';
+            
+            // 2. Insert the specific account name into the search box to filter the table
+            const acc = masterDebts.find(md => md.id == accountId);
+            if (acc) {
+                document.getElementById('searchInput').value = acc.name;
+            }
+            
+            // 3. Re-render the ledger table with the new filters applied
+            render();
         }
 
         // ==========================================
@@ -1189,8 +1200,15 @@
                 // Prevent error when debt.notes is null by using a safe check
                 const noteText = debt.notes ? debt.notes.toLowerCase() : '';
                 const personText = debt.person ? debt.person.toLowerCase() : '';
+                
+                // Get linked account name to make it searchable
+                let accountNameText = '';
+                if (debt.account_id) {
+                    const linkedAcc = masterDebts.find(md => md.id == debt.account_id);
+                    if (linkedAcc) accountNameText = linkedAcc.name.toLowerCase();
+                }
 
-                const matchesSearch = personText.includes(searchQuery) || noteText.includes(searchQuery);
+                const matchesSearch = personText.includes(searchQuery) || noteText.includes(searchQuery) || accountNameText.includes(searchQuery);
                 const matchesStatus = filterStatus === 'all' ||
                     (filterStatus === 'active' && (!debt.paid || debt.paid === 'false')) ||
                     (filterStatus === 'settled' && (debt.paid === true || debt.paid === 'true'));
