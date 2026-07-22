@@ -891,7 +891,7 @@
                 due_date: document.getElementById('dueDate').value || null,
                 notes: document.getElementById('notes').value.trim(),
                 account_id: accountIdVal === 'none' ? null : accountIdVal,
-                user_id: currentUser.id // Ensure user_id is passed if RLS requires it
+                // user_id: currentUser.id // Ensure user_id is passed if RLS requires it
             };
 
             if (editingId) {
