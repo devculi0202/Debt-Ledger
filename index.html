@@ -211,6 +211,74 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: EDIT MASTER DEBT (ACCOUNT)          -->
+    <!-- ========================================== -->
+    <div id="editMasterDebtModal"
+        class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity px-4">
+        <div
+            class="bg-light-surface dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-light-border dark:border-dark-border overflow-hidden transform transition-all">
+            <div
+                class="p-5 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/50 dark:bg-dark-bg/50">
+                <h3 class="text-lg font-bold text-light-textPrimary dark:text-dark-textPrimary flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-brand-primary"></i> Edit Debt Account
+                </h3>
+                <button onclick="toggleModal('editMasterDebtModal', false)"
+                    class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-negative dark:hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-border dark:hover:bg-dark-border">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="editMasterDebtForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Account Name (Purpose)</label>
+                        <input type="text" id="editMdName" required class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-3 outline-none focus:border-brand-primary text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Debt Type</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="relative flex cursor-pointer rounded-lg border border-brand-negative/50 bg-brand-negative/5 p-3 text-brand-negative hover:bg-brand-negative/10">
+                                <input type="radio" name="editMdType" value="owe" class="peer sr-only" />
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                    <span class="text-sm font-semibold">I Owe (-)</span>
+                                </div>
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100 transition-opacity">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </label>
+                            <label class="relative flex cursor-pointer rounded-lg border border-light-border dark:border-dark-border p-3 text-light-textSecondary dark:text-dark-textSecondary hover:bg-light-bg dark:hover:bg-dark-bg">
+                                <input type="radio" name="editMdType" value="owed" class="peer sr-only" />
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                    <span class="text-sm font-semibold text-brand-positive">Owed to Me (+)</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Total Principal Amount (VNĐ)</label>
+                        <div class="relative">
+                            <input type="number" id="editMdPrincipal" required min="0" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-3 pr-10 outline-none focus:border-brand-primary text-base font-bold">
+                            <span class="absolute right-4 top-3 text-light-textSecondary dark:text-dark-textSecondary font-medium">₫</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Entity/Creditor (Optional)</label>
+                        <input type="text" id="editMdCreditor" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-3 outline-none focus:border-brand-primary text-sm">
+                    </div>
+
+                    <div class="pt-4 flex gap-3 border-t border-light-border dark:border-dark-border mt-6">
+                        <button type="button" onclick="toggleModal('editMasterDebtModal', false)" class="flex-1 px-4 py-2.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border text-light-textPrimary dark:text-dark-textPrimary font-semibold rounded-lg hover:bg-light-border dark:hover:bg-dark-border transition">Cancel</button>
+                        <button type="submit" id="submitEditMdBtn" class="flex-1 px-4 py-2.5 bg-brand-primary text-white font-semibold rounded-lg hover:opacity-90 transition flex justify-center items-center gap-2">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL: ADD NEW TRANSACTION                 -->
     <!-- ========================================== -->
     <div id="newTransactionModal"
@@ -814,10 +882,12 @@
             }
 
             masterDebts.forEach(account => {
-                // Calculate progress based on linked transactions
-                const linkedTransactions = debts.filter(d => d.account_id === account.id && d.paid === true);
-                const amountPaid = linkedTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
-                const remaining = account.principal_amount - amountPaid;
+                // Calculate progress based ONLY on settled transactions linked to this account
+                const allLinkedTransactions = debts.filter(d => d.account_id == account.id);
+                const settledTransactions = allLinkedTransactions.filter(d => d.paid === true || d.paid === 'true');
+                
+                const amountPaid = settledTransactions.reduce((sum, t) => sum + Number(t.amount), 0);
+                const remaining = Math.max(0, account.principal_amount - amountPaid);
                 const progressPercent = account.principal_amount > 0 ? Math.min(100, (amountPaid / account.principal_amount) * 100) : 0;
 
                 const isOwe = account.type === 'owe';
@@ -825,7 +895,7 @@
                 const badgeText = isOwe ? 'I Owe' : 'Owed To Me';
                 const iconColor = isOwe ? 'bg-brand-negative/10 text-brand-negative border-brand-negative/20' : 'bg-brand-positive/10 text-brand-positive border-brand-positive/20';
                 const iconClass = isOwe ? 'fa-mobile-screen' : 'fa-hand-holding-dollar';
-                const progressColor = isOwe ? 'bg-brand-positive' : 'bg-brand-negative'; // Positive means good progress on paying debt
+                const progressColor = isOwe ? 'bg-brand-positive' : 'bg-brand-negative'; 
 
                 const cardHtml = `
                     <div class="bg-light-surface dark:bg-dark-surface rounded-xl shadow-sm border border-light-border dark:border-dark-border overflow-hidden hover:shadow-md transition">
@@ -855,14 +925,17 @@
                                     </div>
                                 </div>
                                 <div class="mt-1 flex justify-between items-center text-xs">
-                                    <button onclick="deleteMasterDebt('${account.id}')" class="text-light-textSecondary hover:text-brand-negative transition"><i class="fa-solid fa-trash-can"></i></button>
+                                    <div class="flex gap-3">
+                                        <button onclick="editMasterDebt('${account.id}')" class="text-light-textSecondary hover:text-brand-primary transition" title="Edit Account"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="deleteMasterDebt('${account.id}')" class="text-light-textSecondary hover:text-brand-negative transition" title="Delete Account"><i class="fa-solid fa-trash-can"></i></button>
+                                    </div>
                                     <span class="font-bold text-brand-primary">${progressPercent.toFixed(1)}% Completed</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="bg-light-bg/50 dark:bg-dark-bg/50 px-6 py-4 border-t border-light-border dark:border-dark-border flex justify-between items-center">
-                            <span class="text-sm text-light-textSecondary dark:text-dark-textSecondary"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${linkedTransactions.length} payments recorded.</span>
+                            <span class="text-sm text-light-textSecondary dark:text-dark-textSecondary"><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${allLinkedTransactions.length} logs (${settledTransactions.length} settled).</span>
                             <button onclick="filterTransactionsByAccount('${account.id}')" class="text-sm font-semibold text-brand-primary hover:underline flex items-center">Log Payment <i class="fa-solid fa-arrow-right ml-1.5 text-xs"></i></button>
                         </div>
                     </div>
@@ -915,6 +988,61 @@
             submitBtn.innerHTML = originalText;
         });
 
+        // ==========================================
+        // Edit Master Debt Account Logic
+        // ==========================================
+        let editingMasterDebtId = null;
+
+        function editMasterDebt(id) {
+            const md = masterDebts.find(a => a.id === id);
+            if (!md) return;
+            
+            editingMasterDebtId = id;
+            document.getElementById('editMdName').value = md.name;
+            document.getElementById('editMdPrincipal').value = md.principal_amount;
+            document.getElementById('editMdCreditor').value = md.creditor || '';
+            document.querySelector(`input[name="editMdType"][value="${md.type}"]`).checked = true;
+            
+            toggleModal('editMasterDebtModal', true);
+        }
+
+        document.getElementById('editMasterDebtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitEditMdBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            const payload = {
+                name: document.getElementById('editMdName').value.trim(),
+                principal_amount: parseInt(document.getElementById('editMdPrincipal').value),
+                creditor: document.getElementById('editMdCreditor').value.trim() || null,
+                type: document.querySelector('input[name="editMdType"]:checked').value
+            };
+
+            if (isNaN(payload.principal_amount) || payload.principal_amount < 0) {
+                alert("Please enter a valid principal amount.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+
+            const { error } = await supabaseClient.from('debt_accounts').update(payload).eq('id', editingMasterDebtId);
+
+            if (error) {
+                console.error("Error updating account:", error);
+                alert("Failed to update account.");
+            } else {
+                toggleModal('editMasterDebtModal', false);
+                await fetchMasterDebts(); 
+                await fetchDebts(); // Re-render to update dependent views
+            }
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+
         async function deleteMasterDebt(id) {
             if (confirm('Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.')) {
                 // First unlink transactions
@@ -940,7 +1068,7 @@
         }
 
         // ==========================================
-        // Modal Controls (Add/Edit)
+        // Modal Controls (Add/Edit Transactions)
         // ==========================================
         function openAddTransactionModal() {
             document.getElementById('newDebtForm').reset();
@@ -1058,14 +1186,14 @@
                 const dMonth = tDateStr.substring(0, 7);
 
                 const matchesMonth = filterMonth === 'all' || dMonth === filterMonth;
-                // BUG FIX: Prevent error when debt.notes is null by using a safe check
+                // Prevent error when debt.notes is null by using a safe check
                 const noteText = debt.notes ? debt.notes.toLowerCase() : '';
                 const personText = debt.person ? debt.person.toLowerCase() : '';
 
                 const matchesSearch = personText.includes(searchQuery) || noteText.includes(searchQuery);
                 const matchesStatus = filterStatus === 'all' ||
-                    (filterStatus === 'active' && !debt.paid) ||
-                    (filterStatus === 'settled' && debt.paid);
+                    (filterStatus === 'active' && (!debt.paid || debt.paid === 'false')) ||
+                    (filterStatus === 'settled' && (debt.paid === true || debt.paid === 'true'));
 
                 return matchesMonth && matchesSearch && matchesStatus;
             });
@@ -1074,37 +1202,38 @@
             else emptyState.classList.add('hidden');
 
             filteredDebts.forEach(debt => {
-                if (!debt.paid) {
+                if (!debt.paid || debt.paid === 'false') {
                     if (debt.type === 'owed') totalReceivables += Number(debt.amount);
                     if (debt.type === 'owe') totalLiabilities += Number(debt.amount);
                 }
 
                 const tr = document.createElement('tr');
                 const isEditing = editingId === debt.id;
+                const isSettled = debt.paid === true || debt.paid === 'true';
 
                 tr.className = `transition group 
-                    ${debt.paid ? 'bg-light-bg/50 dark:bg-dark-bg/50' : 'hover:bg-light-bg dark:hover:bg-dark-bg'} 
+                    ${isSettled ? 'bg-light-bg/50 dark:bg-dark-bg/50' : 'hover:bg-light-bg dark:hover:bg-dark-bg'} 
                     ${isEditing ? 'bg-brand-primary/5 dark:bg-brand-primary/10 outline outline-1 outline-brand-primary/30' : ''}`;
 
-                const badgeColor = debt.paid
+                const badgeColor = isSettled
                     ? 'bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary border border-light-border dark:border-dark-border'
                     : (debt.type === 'owed' ? 'bg-brand-positive/10 text-brand-positive border border-brand-positive/30' : 'bg-brand-negative/10 text-brand-negative border border-brand-negative/30');
 
-                const statusLabel = debt.paid ? 'Settled' : (debt.type === 'owed' ? 'Owed to Me' : 'I Owe');
+                const statusLabel = isSettled ? 'Settled' : (debt.type === 'owed' ? 'Owed to Me' : 'I Owe');
 
-                const amountColor = debt.paid
+                const amountColor = isSettled
                     ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70'
                     : (debt.type === 'owed' ? 'text-brand-positive' : 'text-brand-negative');
 
                 const displayDate = debt.transaction_date || debt.created_at.split('T')[0];
-                const amountDisplay = (debt.type === 'owe' && !debt.paid ? '-' : (debt.type === 'owed' && !debt.paid ? '+' : '')) + formatVND(Number(debt.amount));
+                const amountDisplay = (debt.type === 'owe' && !isSettled ? '-' : (debt.type === 'owed' && !isSettled ? '+' : '')) + formatVND(Number(debt.amount));
 
                 // Find linked account name if any
                 let linkTagHtml = '<span class="text-xs text-light-textSecondary/50 dark:text-dark-textSecondary/50">-</span>';
                 if (debt.account_id && masterDebts.length > 0) {
                     const linkedAcc = masterDebts.find(md => md.id == debt.account_id);
                     if (linkedAcc) {
-                        linkTagHtml = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-primary/10 text-brand-primary text-[11px] font-bold border border-brand-primary/20 ${debt.paid ? 'opacity-50' : ''}"><i class="fa-solid fa-link"></i> ${escapeHTML(linkedAcc.name)}</span>`;
+                        linkTagHtml = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-brand-primary/10 text-brand-primary text-[11px] font-bold border border-brand-primary/20 ${isSettled ? 'opacity-50' : ''}"><i class="fa-solid fa-link"></i> ${escapeHTML(linkedAcc.name)}</span>`;
                     }
                 }
 
@@ -1115,20 +1244,20 @@
                             <span class="text-xs text-light-textSecondary dark:text-dark-textSecondary font-medium">${displayDate}</span>
                         </div>
                     </td>
-                    <td class="p-3 font-semibold text-light-textPrimary dark:text-dark-textPrimary ${debt.paid ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70' : ''}">
+                    <td class="p-3 font-semibold text-light-textPrimary dark:text-dark-textPrimary ${isSettled ? 'text-light-textSecondary dark:text-dark-textSecondary line-through opacity-70' : ''}">
                         ${escapeHTML(debt.person)}
                     </td>
                     <td class="p-3 align-middle whitespace-nowrap">
                         ${linkTagHtml}
                     </td>
                     <td class="p-3 text-light-textSecondary dark:text-dark-textSecondary">
-                        <div class="truncate max-w-[180px] text-xs font-medium ${debt.paid ? 'line-through opacity-70' : ''}">${escapeHTML(debt.notes || '-')}</div>
-                        ${debt.due_date ? `<div class="text-[10px] text-brand-warning mt-1 font-semibold uppercase tracking-wider ${debt.paid ? 'line-through' : ''}">Due: ${debt.due_date}</div>` : ''}
+                        <div class="truncate max-w-[180px] text-xs font-medium ${isSettled ? 'line-through opacity-70' : ''}">${escapeHTML(debt.notes || '-')}</div>
+                        ${debt.due_date ? `<div class="text-[10px] text-brand-warning mt-1 font-semibold uppercase tracking-wider ${isSettled ? 'line-through' : ''}">Due: ${debt.due_date}</div>` : ''}
                     </td>
                     <td class="p-3 font-bold text-right text-sm ${amountColor}">${amountDisplay}</td>
                     <td class="p-3 text-center space-x-2 whitespace-nowrap">
                         <button onclick="togglePaid('${debt.id}')" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-positive transition" title="Toggle Status">
-                            <i class="fa-solid ${debt.paid ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
+                            <i class="fa-solid ${isSettled ? 'fa-rotate-left' : 'fa-circle-check'}"></i>
                         </button>
                         <button onclick="editDebt('${debt.id}')" class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-primary transition" title="Edit Record">
                             <i class="fa-solid fa-pen-to-square"></i>
@@ -1248,15 +1377,17 @@
         async function togglePaid(id) {
             const debt = debts.find(d => d.id === id);
             if (debt) {
-                const newStatus = !debt.paid;
-                debt.paid = newStatus;
+                const currentStatus = debt.paid === true || debt.paid === 'true';
+                const newStatus = !currentStatus;
+                debt.paid = newStatus; // Optimistic update
+                
                 render();
-                if (masterDebts.length > 0) renderMasterDebts(); // Update progress bar
+                if (masterDebts.length > 0) renderMasterDebts(); 
 
                 const { error } = await supabaseClient.from('debts').update({ paid: newStatus }).eq('id', id);
                 if (error) {
                     console.error('Failed to sync', error);
-                    debt.paid = !newStatus;
+                    debt.paid = currentStatus; // Revert on failure
                     render();
                     if (masterDebts.length > 0) renderMasterDebts();
                 }
@@ -1270,12 +1401,12 @@
                 const backupDebts = [...debts];
                 debts = debts.filter(d => d.id !== id);
                 render();
-                if (masterDebts.length > 0) renderMasterDebts(); // Update progress bar
+                if (masterDebts.length > 0) renderMasterDebts(); 
 
                 const { error } = await supabaseClient.from('debts').delete().eq('id', id);
                 if (error) {
                     console.error('Failed to delete', error);
-                    debts = backupDebts;
+                    debts = backupDebts; // Revert on failure
                     render();
                     if (masterDebts.length > 0) renderMasterDebts();
                 } else {
