@@ -211,6 +211,83 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL: ADD NEW TRANSACTION                 -->
+    <!-- ========================================== -->
+    <div id="newTransactionModal"
+        class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity px-4">
+        <div
+            class="bg-light-surface dark:bg-dark-surface w-full max-w-md rounded-2xl shadow-2xl border border-light-border dark:border-dark-border overflow-hidden transform transition-all">
+            <div
+                class="p-5 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/50 dark:bg-dark-bg/50">
+                <h3 class="text-lg font-bold text-light-textPrimary dark:text-dark-textPrimary flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-brand-primary"></i> Log Transaction
+                </h3>
+                <button onclick="closeAddTransactionModal()"
+                    class="text-light-textSecondary dark:text-dark-textSecondary hover:text-brand-negative dark:hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-border dark:hover:bg-dark-border">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="newDebtForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Type</label>
+                        <select id="newType" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                            <option value="owe">I Owe (-)</option>
+                            <option value="owed">Owed to Me (+)</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-brand-primary/5 dark:bg-brand-primary/10 p-3 rounded-lg border border-brand-primary/20">
+                        <label class="block text-sm font-bold text-brand-primary mb-1">
+                            <i class="fa-solid fa-link mr-1"></i> Link to Debt Account
+                        </label>
+                        <select id="newAccountId" class="w-full border border-brand-primary/30 bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 outline-none focus:border-brand-primary text-xs font-medium">
+                            <option value="none">-- General Transaction (Unlinked) --</option>
+                            <!-- Injected dynamically -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Entity</label>
+                        <input type="text" id="newPerson" required placeholder="e.g., Alice" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Amount (VNĐ)</label>
+                        <div class="relative">
+                            <input type="number" id="newAmount" required min="0" step="1" placeholder="100000" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 pr-8 outline-none focus:border-brand-primary text-sm font-semibold">
+                            <span class="absolute right-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary font-medium">₫</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Tx Date</label>
+                            <input type="date" id="newTxDate" required class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Due Date</label>
+                            <input type="date" id="newDueDate" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Notes</label>
+                        <input type="text" id="newNotes" placeholder="Optional" class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
+                    </div>
+
+                    <div class="pt-4 flex gap-3 border-t border-light-border dark:border-dark-border mt-4">
+                        <button type="button" onclick="closeAddTransactionModal()" class="flex-1 px-4 py-2.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border text-light-textPrimary dark:text-dark-textPrimary font-semibold rounded-lg hover:bg-light-border dark:hover:bg-dark-border transition shadow-sm">Cancel</button>
+                        <button type="submit" id="submitNewBtn" class="flex-1 bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
+                            Add Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL: EDIT TRANSACTION                    -->
     <!-- ========================================== -->
     <div id="editTransactionModal"
@@ -461,149 +538,66 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Log Form (Dynamic) -->
-                        <div class="lg:col-span-1 bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border h-fit"
-                            id="formContainer">
-                            <h3 id="formTitle"
-                                class="text-lg font-semibold mb-4 border-b border-light-border dark:border-dark-border pb-2 text-light-textPrimary dark:text-dark-textPrimary">
-                                Log Transaction</h3>
-                            <form id="debtForm" class="space-y-4">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Type</label>
-                                    <select id="type"
-                                        class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm">
-                                        <option value="owe">I Owe (-)</option>
-                                        <option value="owed">Owed to Me (+)</option>
-                                    </select>
-                                </div>
-
-                                <!-- Dropdown listing Master Debts (Dynamic) -->
-                                <div
-                                    class="bg-brand-primary/5 dark:bg-brand-primary/10 p-3 rounded-lg border border-brand-primary/20">
-                                    <label class="block text-sm font-bold text-brand-primary mb-1">
-                                        <i class="fa-solid fa-link mr-1"></i> Link to Debt Account
-                                    </label>
-                                    <select id="accountId"
-                                        class="w-full border border-brand-primary/30 bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 outline-none focus:border-brand-primary text-xs font-medium">
-                                        <option value="none">-- General Transaction (Unlinked) --</option>
-                                        <!-- Injected dynamically -->
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Entity</label>
-                                    <input type="text" id="person" required
-                                        class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm placeholder:text-light-textSecondary/50"
-                                        placeholder="e.g., Alice">
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Amount
-                                        (VNĐ)</label>
-                                    <div class="relative">
-                                        <input type="number" id="amount" required min="0" step="1"
-                                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 pr-8 outline-none focus:border-brand-primary text-sm font-semibold"
-                                            placeholder="100000">
-                                        <span
-                                            class="absolute right-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary font-medium">₫</span>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Tx
-                                            Date</label>
-                                        <input type="date" id="txDate" required
-                                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm">
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Due
-                                            Date</label>
-                                        <input type="date" id="dueDate"
-                                            class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary dark:focus:border-brand-primary text-sm">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-light-textSecondary dark:text-dark-textSecondary mb-1">Notes</label>
-                                    <input type="text" id="notes" placeholder="Optional"
-                                        class="w-full border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2.5 outline-none focus:border-brand-primary text-sm">
-                                </div>
-
-                                <div class="flex gap-2 mt-2">
-                                    <button type="submit" id="submitBtn"
-                                        class="w-full bg-brand-primary hover:opacity-90 text-white font-semibold py-2.5 rounded-lg transition shadow-sm">
-                                        Add Record
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- History Table (Dynamic) -->
+                    <!-- History Table (Dynamic) Full Width -->
+                    <div
+                        class="bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border flex flex-col h-full">
                         <div
-                            class="lg:col-span-2 bg-light-surface dark:bg-dark-surface p-6 rounded-xl shadow-sm border border-light-border dark:border-dark-border flex flex-col h-full">
-                            <div
-                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-light-border dark:border-dark-border pb-4 mb-4 gap-4 shrink-0">
-                                <h3 class="text-lg font-bold text-light-textPrimary dark:text-dark-textPrimary">
-                                    Transactions Ledger</h3>
-                                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                                    <select id="monthFilter" onchange="render()"
-                                        class="border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none font-medium focus:border-brand-primary">
-                                        <option value="all">All Time</option>
-                                    </select>
-                                    <select id="statusFilter" onchange="render()"
-                                        class="border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none focus:border-brand-primary">
-                                        <option value="all">All Statuses</option>
-                                        <option value="active">Active Only</option>
-                                        <option value="settled">Settled Only</option>
-                                    </select>
-                                    <div class="relative flex-1 sm:flex-initial">
-                                        <span
-                                            class="absolute left-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary text-sm"><i
-                                                class="fa-solid fa-magnifying-glass"></i></span>
-                                        <input type="text" id="searchInput" oninput="render()" placeholder="Search..."
-                                            class="w-full sm:w-36 border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 pl-9 text-xs outline-none focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50">
-                                    </div>
+                            class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-light-border dark:border-dark-border pb-4 mb-4 gap-4 shrink-0">
+                            <h3 class="text-lg font-bold text-light-textPrimary dark:text-dark-textPrimary">
+                                Transactions Ledger</h3>
+                            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                <button onclick="openAddTransactionModal()" class="px-4 py-2 bg-brand-primary hover:opacity-90 text-white text-xs font-semibold rounded-lg transition shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add Record
+                                </button>
+                                <select id="monthFilter" onchange="render()"
+                                    class="border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none font-medium focus:border-brand-primary">
+                                    <option value="all">All Time</option>
+                                </select>
+                                <select id="statusFilter" onchange="render()"
+                                    class="border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 text-xs outline-none focus:border-brand-primary">
+                                    <option value="all">All Statuses</option>
+                                    <option value="active">Active Only</option>
+                                    <option value="settled">Settled Only</option>
+                                </select>
+                                <div class="relative flex-1 sm:flex-initial">
+                                    <span
+                                        class="absolute left-3 top-2.5 text-light-textSecondary dark:text-dark-textSecondary text-sm"><i
+                                            class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="text" id="searchInput" oninput="render()" placeholder="Search..."
+                                        class="w-full sm:w-36 border border-light-border dark:border-dark-border bg-light-surface dark:bg-dark-surface text-light-textPrimary dark:text-dark-textPrimary rounded-lg p-2 pl-9 text-xs outline-none focus:border-brand-primary placeholder:text-light-textSecondary/50 dark:placeholder:text-dark-textSecondary/50">
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="overflow-x-auto flex-1">
-                                <table class="w-full text-left border-collapse min-w-[600px]">
-                                    <thead>
-                                        <tr
-                                            class="bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary text-xs uppercase tracking-wider border-y border-light-border dark:border-dark-border">
-                                            <th class="p-3 font-semibold w-32">Status / Date</th>
-                                            <th class="p-3 font-semibold">Entity</th>
-                                            <th class="p-3 font-semibold">Link to Debt Account</th>
-                                            <th class="p-3 font-semibold">Details</th>
-                                            <th class="p-3 font-semibold text-right">Amount (VNĐ)</th>
-                                            <th class="p-3 font-semibold text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="ledgerBody"
-                                        class="divide-y divide-light-border dark:divide-dark-border text-sm hidden">
-                                        <!-- Injected dynamically -->
-                                    </tbody>
-                                </table>
+                        <div class="overflow-x-auto flex-1">
+                            <table class="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr
+                                        class="bg-light-bg dark:bg-dark-bg text-light-textSecondary dark:text-dark-textSecondary text-xs uppercase tracking-wider border-y border-light-border dark:border-dark-border">
+                                        <th class="p-3 font-semibold w-32">Status / Date</th>
+                                        <th class="p-3 font-semibold">Entity</th>
+                                        <th class="p-3 font-semibold">Link to Debt Account</th>
+                                        <th class="p-3 font-semibold">Details</th>
+                                        <th class="p-3 font-semibold text-right">Amount (VNĐ)</th>
+                                        <th class="p-3 font-semibold text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledgerBody"
+                                    class="divide-y divide-light-border dark:divide-dark-border text-sm hidden">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
 
-                                <div id="loadingState"
-                                    class="flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
-                                    <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-primary"></i>
-                                    <p class="font-medium">Syncing database...</p>
-                                </div>
+                            <div id="loadingState"
+                                class="flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
+                                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-brand-primary"></i>
+                                <p class="font-medium">Syncing database...</p>
+                            </div>
 
-                                <div id="emptyState"
-                                    class="hidden flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
-                                    <i class="fa-solid fa-folder-open text-5xl mb-4 opacity-50"></i>
-                                    <p class="font-semibold">No records found</p>
-                                </div>
+                            <div id="emptyState"
+                                class="hidden flex flex-col items-center justify-center py-16 text-light-textSecondary dark:text-dark-textSecondary">
+                                <i class="fa-solid fa-folder-open text-5xl mb-4 opacity-50"></i>
+                                <p class="font-semibold">No records found</p>
                             </div>
                         </div>
                     </div>
@@ -631,7 +625,6 @@
         let editingId = null;
         let currentUser = null;
 
-        document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
         const formatVND = (amount) => amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
         // Dark Mode Logic
@@ -779,10 +772,11 @@
         }
 
         function updateAccountDropdown() {
-            const select = document.getElementById('accountId');
             const editSelect = document.getElementById('editAccountId');
-            const currentVal = select.value;
+            const newSelect = document.getElementById('newAccountId');
+            
             const currentEditVal = editSelect ? editSelect.value : 'none';
+            const currentNewVal = newSelect ? newSelect.value : 'none';
 
             let optionsHtml = '<option value="none">-- General Transaction (Unlinked) --</option>';
 
@@ -791,16 +785,17 @@
                 optionsHtml += `<option value="${account.id}">${icon} ${escapeHTML(account.name)} (${formatVND(account.principal_amount)})</option>`;
             });
 
-            select.innerHTML = optionsHtml;
-            if (currentVal && masterDebts.find(md => md.id === currentVal)) {
-                select.value = currentVal;
-            }
-
-            // Populate the modal dropdown too
             if (editSelect) {
                 editSelect.innerHTML = optionsHtml;
                 if (currentEditVal && masterDebts.find(md => md.id === currentEditVal)) {
                     editSelect.value = currentEditVal;
+                }
+            }
+            
+            if (newSelect) {
+                newSelect.innerHTML = optionsHtml;
+                if (currentNewVal && masterDebts.find(md => md.id === currentNewVal)) {
+                    newSelect.value = currentNewVal;
                 }
             }
         }
@@ -937,10 +932,53 @@
             }
         }
 
+        // Clicking "Log Payment" on a Debt Account Card
         function filterTransactionsByAccount(accountId) {
             switchTab('debt-details');
-            document.getElementById('accountId').value = accountId;
-            // Optionally set search input to focus on this account
+            openAddTransactionModal(); // Pop open the add record modal automatically
+            document.getElementById('newAccountId').value = accountId; // Pre-select the specific account
+        }
+
+        // ==========================================
+        // Modal Controls (Add/Edit)
+        // ==========================================
+        function openAddTransactionModal() {
+            document.getElementById('newDebtForm').reset();
+            document.getElementById('newTxDate').value = new Date().toISOString().split('T')[0];
+            toggleModal('newTransactionModal', true);
+        }
+        
+        function closeAddTransactionModal() {
+            toggleModal('newTransactionModal', false);
+        }
+
+        function editDebt(id) {
+            const debt = debts.find(d => d.id === id);
+            if (!debt) return;
+            editingId = id;
+
+            document.getElementById('editType').value = debt.type;
+            document.getElementById('editPerson').value = debt.person;
+            document.getElementById('editAmount').value = debt.amount;
+            document.getElementById('editTxDate').value = debt.transaction_date;
+            document.getElementById('editDueDate').value = debt.due_date || '';
+            document.getElementById('editNotes').value = debt.notes || '';
+
+            if (debt.account_id) {
+                document.getElementById('editAccountId').value = debt.account_id;
+            } else {
+                document.getElementById('editAccountId').value = 'none';
+            }
+            
+            toggleModal('editTransactionModal', true);
+            render(); 
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            document.getElementById('editDebtForm').reset();
+            toggleModal('editTransactionModal', false);
+            render();
         }
 
         // ==========================================
@@ -968,7 +1006,7 @@
             debts = data || [];
             populateMonthDropdown();
             render();
-            // Also re-render master debts to update progress bars
+            
             if (masterDebts.length > 0) renderMasterDebts();
         }
 
@@ -1115,31 +1153,33 @@
             document.querySelectorAll('.period-label').forEach(el => el.textContent = periodText);
         }
 
-        // ADD NEW TRANSACTION (Left Panel)
-        document.getElementById('debtForm').addEventListener('submit', async (e) => {
+        // ==========================================
+        // ADD NEW TRANSACTION (Modal)
+        // ==========================================
+        document.getElementById('newDebtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const submitBtn = document.getElementById('submitBtn');
+            const submitBtn = document.getElementById('submitNewBtn');
             const originalText = submitBtn.innerText;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-            const amt = parseInt(document.getElementById('amount').value);
+            const amt = parseInt(document.getElementById('newAmount').value);
             if (isNaN(amt) || amt < 0) {
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
                 return alert("Vui lòng nhập số tiền hợp lệ");
             }
 
-            const accountIdVal = document.getElementById('accountId').value;
+            const accountIdVal = document.getElementById('newAccountId').value;
 
             const payload = {
-                type: document.getElementById('type').value,
-                person: document.getElementById('person').value.trim(),
+                type: document.getElementById('newType').value,
+                person: document.getElementById('newPerson').value.trim(),
                 amount: amt,
-                transaction_date: document.getElementById('txDate').value,
-                due_date: document.getElementById('dueDate').value || null,
-                notes: document.getElementById('notes').value.trim(),
+                transaction_date: document.getElementById('newTxDate').value,
+                due_date: document.getElementById('newDueDate').value || null,
+                notes: document.getElementById('newNotes').value.trim(),
                 account_id: accountIdVal === 'none' ? null : accountIdVal
             };
 
@@ -1150,9 +1190,7 @@
                 console.error("Error inserting", error);
                 alert("Database Error: " + error.message);
             } else {
-                e.target.reset();
-                document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('accountId').value = accountIdVal; // Keep selected account
+                closeAddTransactionModal();
                 await fetchDebts();
             }
 
@@ -1160,7 +1198,9 @@
             submitBtn.innerText = originalText;
         });
 
+        // ==========================================
         // UPDATE EXISTING TRANSACTION (Modal)
+        // ==========================================
         document.getElementById('editDebtForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1204,36 +1244,6 @@
             submitBtn.disabled = false;
             submitBtn.innerText = originalText;
         });
-
-        function editDebt(id) {
-            const debt = debts.find(d => d.id === id);
-            if (!debt) return;
-            editingId = id;
-
-            // Target the new modal inputs
-            document.getElementById('editType').value = debt.type;
-            document.getElementById('editPerson').value = debt.person;
-            document.getElementById('editAmount').value = debt.amount;
-            document.getElementById('editTxDate').value = debt.transaction_date;
-            document.getElementById('editDueDate').value = debt.due_date || '';
-            document.getElementById('editNotes').value = debt.notes || '';
-
-            if (debt.account_id) {
-                document.getElementById('editAccountId').value = debt.account_id;
-            } else {
-                document.getElementById('editAccountId').value = 'none';
-            }
-            
-            toggleModal('editTransactionModal', true);
-            render(); // Keep the row highlighted while modal is open
-        }
-
-        function cancelEdit() {
-            editingId = null;
-            document.getElementById('editDebtForm').reset();
-            toggleModal('editTransactionModal', false);
-            render();
-        }
 
         async function togglePaid(id) {
             const debt = debts.find(d => d.id === id);
