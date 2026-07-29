@@ -232,6 +232,7 @@ export default function Calculator({ open, onClose }) {
         </div>
         <button
           type="button"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={onClose}
           className="w-7 h-7 rounded-full shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm flex items-center justify-center text-neu-textMuted hover:text-brand-negative transition active:shadow-neu-inner"
         >
