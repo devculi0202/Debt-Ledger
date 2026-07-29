@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { Moon, Sun, LogOut, Menu } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon } from 'lucide-react'
 import LedgerIcon from './components/LedgerIcon'
+import Calculator from './components/Calculator'
 import LoginPage from './pages/LoginPage'
 import MasterDebtsPage from './pages/MasterDebtsPage'
 import TransactionsPage from './pages/TransactionsPage'
@@ -21,6 +22,7 @@ function AuthenticatedShell({
   onOpenMobileNav,
   onCloseMobileNav,
 }) {
+  const [calcOpen, setCalcOpen] = useState(false)
   return (
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
       <div className="flex-1 flex h-screen w-full overflow-hidden">
@@ -89,6 +91,20 @@ function AuthenticatedShell({
           </div>
         </div>
       </div>
+
+      {/* Calculator FAB */}
+      {!calcOpen && (
+        <button
+          type="button"
+          onClick={() => setCalcOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-neu-primary text-white shadow-neu-drop dark:shadow-neu-dark-drop flex items-center justify-center hover:opacity-90 active:shadow-neu-inner transition-all-custom"
+          aria-label="Open calculator"
+        >
+          <CalcIcon className="w-6 h-6" />
+        </button>
+      )}
+
+      <Calculator open={calcOpen} onClose={() => setCalcOpen(false)} />
     </div>
   )
 }
