@@ -89,6 +89,10 @@ function AuthenticatedShell({
           <div className="p-6 md:p-10 max-w-6xl mx-auto w-full flex-1">
             <Outlet />
           </div>
+
+          <footer className="shrink-0 py-4 text-center text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
+            Copyright © 2026 devculi0202. All rights reserved.
+          </footer>
         </div>
       </div>
 
