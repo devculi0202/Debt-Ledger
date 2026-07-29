@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-neu-bg: #E8F0F7;
+  --color-neu-surface: #E8F0F7;
+  --color-neu-primary: #1C2434;
+  --color-neu-textMain: #2D3A4B;
+  --color-neu-textMuted: #7A8B9E;
+
+  --color-brand-primary: #1C2434;
+  --color-brand-negative: #EF4444;
+  --color-brand-positive: #10B981;
+  --color-brand-warning: #F59E0B;
+
+  --color-darkNeu-bg: #1A1F2B;
+  --color-darkNeu-surface: #1A1F2B;
+  --color-darkNeu-textMain: #E8F0F7;
+  --color-darkNeu-textMuted: #7A8B9E;
+
+  --shadow-neu-drop: -6px -6px 12px rgba(255, 255, 255, 0.8), 6px 6px 16px rgba(174, 190, 205, 0.4);
+  --shadow-neu-drop-sm: -3px -3px 6px rgba(255, 255, 255, 0.8), 3px 3px 8px rgba(174, 190, 205, 0.4);
+  --shadow-neu-inner: inset -6px -6px 12px rgba(255, 255, 255, 0.8), inset 6px 6px 16px rgba(174, 190, 205, 0.4);
+
+  --shadow-neu-dark-drop: -5px -5px 10px rgba(255, 255, 255, 0.03), 5px 5px 15px rgba(0, 0, 0, 0.5);
+  --shadow-neu-dark-drop-sm: -3px -3px 6px rgba(255, 255, 255, 0.03), 3px 3px 8px rgba(0, 0, 0, 0.5);
+  --shadow-neu-dark-inner: inset -5px -5px 10px rgba(255, 255, 255, 0.03), inset 5px 5px 15px rgba(0, 0, 0, 0.5);
+
+  --radius-neu-lg: 24px;
+  --radius-neu-md: 12px;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #7A8B9E;
+    border-radius: 10px;
+    opacity: 0.5;
+  }
+}
+
+@layer utilities {
+  .transition-all-custom {
+    transition-property: background-color, box-shadow, color, fill, stroke, opacity, transform, width;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  .sidebar-expanded {
+    width: 16rem;
+  }
+
+  .sidebar-collapsed {
+    width: 4.5rem;
+  }
+
+  .sidebar-collapsed .sidebar-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    display: none;
+  }
+
+  .sidebar-expanded .sidebar-text {
+    opacity: 1;
+    width: auto;
+    display: inline-block;
+  }
+
+  .sidebar-collapsed .nav-item {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .sidebar-collapsed .user-info {
+    display: none;
+  }
+
+  .sidebar-collapsed .theme-btn-text {
+    display: none;
+  }
+}
