@@ -58,7 +58,7 @@ export default function Sidebar({
           }`}
         >
           <Layers className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Master Debt</span>
+          <span className="sidebar-text whitespace-nowrap">Master Debts</span>
         </button>
 
         <button
