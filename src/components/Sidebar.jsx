@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import {
   Scale,
   PanelLeft,
@@ -11,8 +12,6 @@ import {
 } from 'lucide-react'
 
 export default function Sidebar({
-  activeTab,
-  onTabChange,
   userName,
   isDarkMode,
   onToggleDarkMode,
@@ -24,6 +23,11 @@ export default function Sidebar({
     'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain'
   const navInactive =
     'shadow-none text-neu-textMuted hover:text-neu-textMain dark:hover:text-darkNeu-textMain'
+
+  const linkClass = ({ isActive }) =>
+    `nav-item w-full flex items-center gap-4 px-4 py-3.5 rounded-neu-md font-medium transition-all-custom ${
+      isActive ? navActive : navInactive
+    }`
 
   return (
     <aside
@@ -49,29 +53,15 @@ export default function Sidebar({
       </div>
 
       <nav className="flex-1 overflow-y-auto py-8 px-4 space-y-4 overflow-x-hidden">
-        <button
-          type="button"
-          onClick={() => onTabChange('master-debt')}
-          title="Debt Accounts"
-          className={`nav-item w-full flex items-center gap-4 px-4 py-3.5 rounded-neu-md font-medium transition-all-custom ${
-            activeTab === 'master-debt' ? navActive : navInactive
-          }`}
-        >
+        <NavLink to="/master-debts" title="Debt Accounts" className={linkClass}>
           <Layers className="w-5 h-5 shrink-0" />
           <span className="sidebar-text whitespace-nowrap">Master Debts</span>
-        </button>
+        </NavLink>
 
-        <button
-          type="button"
-          onClick={() => onTabChange('debt-details')}
-          title="Transactions"
-          className={`nav-item w-full flex items-center gap-4 px-4 py-3.5 rounded-neu-md font-medium transition-all-custom ${
-            activeTab === 'debt-details' ? navActive : navInactive
-          }`}
-        >
+        <NavLink to="/transactions" title="Transactions" className={linkClass}>
           <List className="w-5 h-5 shrink-0" />
           <span className="sidebar-text whitespace-nowrap">Transactions</span>
-        </button>
+        </NavLink>
       </nav>
 
       <div className="p-6 shrink-0 pb-8 space-y-6">
