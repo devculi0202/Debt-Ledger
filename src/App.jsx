@@ -1,18 +1,14 @@
 import { useEffect, useState } from 'react'
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  Outlet,
+} from 'react-router-dom'
 import { Moon, Scale, LogOut } from 'lucide-react'
-
-function GitHubIcon({ className }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-    </svg>
-  )
-}
+import LoginPage from './pages/LoginPage'
+import ProtectedRoute from './components/ProtectedRoute'
 import { supabase } from './lib/supabase'
 import { isSettled } from './lib/format'
 import Sidebar from './components/Sidebar'
@@ -29,11 +25,88 @@ function getInitialDarkMode() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
+function AuthenticatedShell({
+  userName,
+  isDarkMode,
+  onToggleDarkMode,
+  onSignOut,
+  isSidebarExpanded,
+  onToggleExpand,
+  masterModal,
+  onCloseMasterModal,
+  onSubmitMasterModal,
+  transactionModal,
+  masterDebts,
+  onCloseTransactionModal,
+  onSubmitTransactionModal,
+}) {
+  return (
+    <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
+      <div className="flex-1 flex h-screen w-full overflow-hidden">
+        <Sidebar
+          userName={userName}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={onToggleDarkMode}
+          onSignOut={onSignOut}
+          isExpanded={isSidebarExpanded}
+          onToggleExpand={onToggleExpand}
+        />
+
+        <div className="flex-1 h-screen overflow-y-auto bg-neu-bg dark:bg-darkNeu-bg relative flex flex-col">
+          <div className="md:hidden h-16 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm flex items-center justify-between px-6 sticky top-0 z-10 shrink-0 mb-4">
+            <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
+              <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
+              Ledger
+            </h1>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={onToggleDarkMode}
+                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
+              >
+                <Moon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center hover:text-brand-negative"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="p-6 md:p-10 max-w-6xl mx-auto w-full flex-1">
+            <Outlet />
+          </div>
+        </div>
+      </div>
+
+      <MasterDebtModal
+        open={masterModal.open}
+        mode={masterModal.mode}
+        initialData={masterModal.data}
+        onClose={onCloseMasterModal}
+        onSubmit={onSubmitMasterModal}
+      />
+
+      <TransactionModal
+        open={transactionModal.open}
+        mode={transactionModal.mode}
+        initialData={transactionModal.data}
+        masterDebts={masterDebts}
+        onClose={onCloseTransactionModal}
+        onSubmit={onSubmitTransactionModal}
+      />
+    </div>
+  )
+}
+
 export default function App() {
-  const [session, setSession] = useState(null)
+  const navigate = useNavigate()
+  const [session, setSession] = useState(undefined)
   const [debts, setDebts] = useState([])
   const [masterDebts, setMasterDebts] = useState([])
-  const [activeTab, setActiveTab] = useState('master-debt')
   const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
   const [loadingMaster, setLoadingMaster] = useState(false)
@@ -68,20 +141,20 @@ export default function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
+      setSession(data.session ?? null)
     })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession)
-      if (nextSession) {
-        setActiveTab('master-debt')
+      if (event === 'SIGNED_IN' && nextSession) {
+        navigate('/master-debts', { replace: true })
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     if (!session) {
@@ -131,7 +204,11 @@ export default function App() {
 
   async function signOut() {
     const { error } = await supabase.auth.signOut()
-    if (error) alert(error.message)
+    if (error) {
+      alert(error.message)
+      return
+    }
+    navigate('/login', { replace: true })
   }
 
   async function handleCreateMasterDebt(payload) {
@@ -248,83 +325,82 @@ export default function App() {
   }
 
   function handleViewLedger(account) {
-    setActiveTab('debt-details')
     setMonthFilter('all')
     setStatusFilter('settled')
     setSearchQuery(account.name)
+    navigate('/transactions')
   }
 
   const userName =
     session?.user?.user_metadata?.user_name || session?.user?.email || 'User'
 
-  if (!session) {
+  if (session === undefined) {
     return (
-      <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-neu-bg dark:bg-darkNeu-bg transition-opacity duration-300">
-          <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop mb-2">
-              <Scale className="w-8 h-8 text-neu-primary dark:text-darkNeu-textMain" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Welcome Back</h1>
-              <p className="text-neu-textMuted dark:text-darkNeu-textMuted mt-2 text-sm">
-                Sign in to manage your financial ledgers.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={signInWithGithub}
-              className="w-full flex items-center justify-center gap-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop hover:shadow-neu-inner dark:hover:shadow-neu-dark-inner font-semibold py-3 px-4 rounded-neu-md transition-all-custom"
-            >
-              <GitHubIcon className="w-5 h-5" />
-              Continue with GitHub
-            </button>
-          </div>
-        </div>
+      <div className="bg-neu-bg dark:bg-darkNeu-bg min-h-screen flex items-center justify-center text-neu-textMuted dark:text-darkNeu-textMuted">
+        Loading…
       </div>
     )
   }
 
   return (
-    <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
-      <div className="flex-1 flex h-screen w-full overflow-hidden">
-        <Sidebar
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          userName={userName}
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={() => setIsDarkMode((v) => !v)}
-          onSignOut={signOut}
-          isExpanded={isSidebarExpanded}
-          onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
-        />
+    <Routes>
+      <Route
+        path="/"
+        element={
+          session ? (
+            <Navigate to="/master-debts" replace />
+          ) : (
+            <LoginPage onSignIn={signInWithGithub} />
+          )
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          session ? (
+            <Navigate to="/master-debts" replace />
+          ) : (
+            <LoginPage onSignIn={signInWithGithub} />
+          )
+        }
+      />
 
-        <div className="flex-1 h-screen overflow-y-auto bg-neu-bg dark:bg-darkNeu-bg relative flex flex-col">
-          <div className="md:hidden h-16 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm flex items-center justify-between px-6 sticky top-0 z-10 shrink-0 mb-4">
-            <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
-              <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
-              Ledger
-            </h1>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => setIsDarkMode((v) => !v)}
-                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
-              >
-                <Moon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={signOut}
-                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center hover:text-brand-negative"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-10 max-w-6xl mx-auto w-full flex-1">
-            {activeTab === 'master-debt' ? (
+      <Route element={<ProtectedRoute session={session} />}>
+        <Route
+          element={
+            <AuthenticatedShell
+              userName={userName}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={() => setIsDarkMode((v) => !v)}
+              onSignOut={signOut}
+              isSidebarExpanded={isSidebarExpanded}
+              onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
+              masterModal={masterModal}
+              onCloseMasterModal={() =>
+                setMasterModal({ open: false, mode: 'create', data: null })
+              }
+              onSubmitMasterModal={
+                masterModal.mode === 'edit'
+                  ? handleUpdateMasterDebt
+                  : handleCreateMasterDebt
+              }
+              transactionModal={transactionModal}
+              masterDebts={masterDebts}
+              onCloseTransactionModal={() => {
+                setEditingId(null)
+                setTransactionModal({ open: false, mode: 'create', data: null })
+              }}
+              onSubmitTransactionModal={
+                transactionModal.mode === 'edit'
+                  ? handleUpdateTransaction
+                  : handleCreateTransaction
+              }
+            />
+          }
+        >
+          <Route
+            path="/master-debts"
+            element={
               <MasterDebtList
                 masterDebts={masterDebts}
                 debts={debts}
@@ -338,7 +414,11 @@ export default function App() {
                 onDelete={handleDeleteMasterDebt}
                 onViewLedger={handleViewLedger}
               />
-            ) : (
+            }
+          />
+          <Route
+            path="/transactions"
+            element={
               <TransactionLedger
                 debts={debts}
                 masterDebts={masterDebts}
@@ -368,40 +448,17 @@ export default function App() {
                 }}
                 onDelete={handleDeleteDebt}
               />
-            )}
-          </div>
-        </div>
-      </div>
+            }
+          />
+        </Route>
+      </Route>
 
-      <MasterDebtModal
-        open={masterModal.open}
-        mode={masterModal.mode}
-        initialData={masterModal.data}
-        onClose={() =>
-          setMasterModal({ open: false, mode: 'create', data: null })
-        }
-        onSubmit={
-          masterModal.mode === 'edit'
-            ? handleUpdateMasterDebt
-            : handleCreateMasterDebt
+      <Route
+        path="*"
+        element={
+          <Navigate to={session ? '/master-debts' : '/login'} replace />
         }
       />
-
-      <TransactionModal
-        open={transactionModal.open}
-        mode={transactionModal.mode}
-        initialData={transactionModal.data}
-        masterDebts={masterDebts}
-        onClose={() => {
-          setEditingId(null)
-          setTransactionModal({ open: false, mode: 'create', data: null })
-        }}
-        onSubmit={
-          transactionModal.mode === 'edit'
-            ? handleUpdateTransaction
-            : handleCreateTransaction
-        }
-      />
-    </div>
+    </Routes>
   )
 }
