@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import * as transactionsService from '../services/transactions'
 import { isSettled } from '../lib/format'
+import logger from '../lib/logger'
 
 export default function useTransactions(session) {
   const [debts, setDebts] = useState([])
@@ -13,6 +14,7 @@ export default function useTransactions(session) {
     const { data, error } = await transactionsService.fetchAll()
     setLoading(false)
     if (error) {
+      logger.error('Database connection failed', 'transactions', error)
       alert('Database connection failed.')
       return
     }
@@ -44,6 +46,7 @@ export default function useTransactions(session) {
   async function handleCreate(payload) {
     const { error } = await transactionsService.create(payload)
     if (error) {
+      logger.error('Create transaction failed', 'transactions', error)
       alert('Database Error: ' + error.message)
       return
     }
@@ -58,6 +61,7 @@ export default function useTransactions(session) {
       paid: existing?.paid ?? false,
     })
     if (error) {
+      logger.error('Update transaction failed', 'transactions', error)
       alert('Database Error: ' + error.message)
       return
     }
@@ -75,6 +79,7 @@ export default function useTransactions(session) {
     )
     const { error } = await transactionsService.togglePaid(id, newStatus)
     if (error) {
+      logger.error(`Toggle paid failed for ${id}`, 'transactions', error)
       setDebts((prev) =>
         prev.map((d) => (d.id === id ? { ...d, paid: currentStatus } : d)),
       )
@@ -90,6 +95,7 @@ export default function useTransactions(session) {
     setDebts((prev) => prev.filter((d) => d.id !== id))
     const { error } = await transactionsService.remove(id)
     if (error) {
+      logger.error(`Delete failed for ${id}`, 'transactions', error)
       setDebts(backup)
     }
   }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import * as authService from '../services/auth'
+import logger from '../lib/logger'
 
 export default function useAuth() {
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ export default function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      logger.info(`Auth state changed: ${event}`, 'auth')
       setSession(nextSession)
       if (event === 'SIGNED_IN' && nextSession) {
         navigate('/master-debts', { replace: true })
