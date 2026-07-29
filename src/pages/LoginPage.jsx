@@ -1,4 +1,4 @@
-import { Scale } from 'lucide-react'
+import LedgerIcon from '../components/LedgerIcon'
 
 function GitHubIcon({ className }) {
   return (
@@ -19,7 +19,7 @@ export default function LoginPage({ onSignIn }) {
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-neu-bg dark:bg-darkNeu-bg transition-opacity duration-300">
         <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop mb-2">
-            <Scale className="w-8 h-8 text-neu-primary dark:text-darkNeu-textMain" />
+            <LedgerIcon className="w-8 h-8 text-neu-primary dark:text-darkNeu-textMain" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Welcome Back</h1>

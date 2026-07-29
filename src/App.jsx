@@ -6,7 +6,8 @@ import {
   useNavigate,
   Outlet,
 } from 'react-router-dom'
-import { Moon, Sun, Scale, LogOut, Menu } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu } from 'lucide-react'
+import LedgerIcon from './components/LedgerIcon'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { supabase } from './lib/supabase'
@@ -79,7 +80,7 @@ function AuthenticatedShell({
                 <Menu className="w-4 h-4" />
               </button>
               <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
-                <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
+                <LedgerIcon className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
                 Ledger
               </h1>
             </div>
