@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import {
-  Scale,
   PanelLeft,
   Menu,
   X,
@@ -11,6 +10,7 @@ import {
   Moon,
   Sun,
 } from 'lucide-react'
+import LedgerIcon from './LedgerIcon'
 
 export default function Sidebar({
   userName,
@@ -46,7 +46,7 @@ export default function Sidebar({
     >
       <div className="h-20 flex items-center justify-between px-6 shrink-0 pt-4">
         <h1 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain flex items-center overflow-hidden whitespace-nowrap sidebar-text pl-2">
-          <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-3 w-5 h-5" />
+          <LedgerIcon className="text-neu-primary dark:text-darkNeu-textMain mr-3 w-5 h-5" />
           Ledger
         </h1>
         <button
