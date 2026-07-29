@@ -3,6 +3,7 @@ import {
   Scale,
   PanelLeft,
   Menu,
+  X,
   Layers,
   List,
   User,
@@ -18,6 +19,8 @@ export default function Sidebar({
   onSignOut,
   isExpanded,
   onToggleExpand,
+  isMobileOpen = false,
+  onMobileClose,
 }) {
   const navActive =
     'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain'
@@ -29,10 +32,17 @@ export default function Sidebar({
       isActive ? navActive : navInactive
     }`
 
+  // On mobile drawer, always show expanded labels for usability
+  const showExpanded = isMobileOpen || isExpanded
+
   return (
     <aside
       id="sidebar"
-      className={`${isExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'} bg-neu-surface dark:bg-darkNeu-surface shadow-[6px_0_16px_rgba(174,190,205,0.3)] dark:shadow-[5px_0_15px_rgba(0,0,0,0.5)] h-screen flex flex-col hidden md:flex shrink-0 transition-all duration-300 z-20`}
+      className={`${showExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'} bg-neu-surface dark:bg-darkNeu-surface shadow-[6px_0_16px_rgba(174,190,205,0.3)] dark:shadow-[5px_0_15px_rgba(0,0,0,0.5)] h-screen flex flex-col shrink-0 transition-all duration-300 fixed inset-y-0 left-0 z-40 ${
+        isMobileOpen
+          ? 'translate-x-0 pointer-events-auto'
+          : '-translate-x-full pointer-events-none'
+      } md:relative md:translate-x-0 md:pointer-events-auto md:z-20`}
     >
       <div className="h-20 flex items-center justify-between px-6 shrink-0 pt-4">
         <h1 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain flex items-center overflow-hidden whitespace-nowrap sidebar-text pl-2">
@@ -41,10 +51,13 @@ export default function Sidebar({
         </h1>
         <button
           type="button"
-          onClick={onToggleExpand}
+          onClick={isMobileOpen ? onMobileClose : onToggleExpand}
           className="w-10 h-10 flex items-center justify-center rounded-full text-neu-textMuted shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner transition shrink-0"
+          aria-label={isMobileOpen ? 'Close menu' : 'Toggle sidebar'}
         >
-          {isExpanded ? (
+          {isMobileOpen ? (
+            <X className="w-4 h-4" />
+          ) : isExpanded ? (
             <PanelLeft className="w-4 h-4" />
           ) : (
             <Menu className="w-4 h-4" />
@@ -53,12 +66,22 @@ export default function Sidebar({
       </div>
 
       <nav className="flex-1 overflow-y-auto py-8 px-4 space-y-4 overflow-x-hidden">
-        <NavLink to="/master-debts" title="Debt Accounts" className={linkClass}>
+        <NavLink
+          to="/master-debts"
+          title="Debt Accounts"
+          className={linkClass}
+          onClick={onMobileClose}
+        >
           <Layers className="w-5 h-5 shrink-0" />
           <span className="sidebar-text whitespace-nowrap">Master Debts</span>
         </NavLink>
 
-        <NavLink to="/transactions" title="Transactions" className={linkClass}>
+        <NavLink
+          to="/transactions"
+          title="Transactions"
+          className={linkClass}
+          onClick={onMobileClose}
+        >
           <List className="w-5 h-5 shrink-0" />
           <span className="sidebar-text whitespace-nowrap">Transactions</span>
         </NavLink>
