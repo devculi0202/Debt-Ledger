@@ -6,7 +6,7 @@ import {
   useNavigate,
   Outlet,
 } from 'react-router-dom'
-import { Moon, Scale, LogOut } from 'lucide-react'
+import { Moon, Sun, Scale, LogOut, Menu } from 'lucide-react'
 import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { supabase } from './lib/supabase'
@@ -32,6 +32,9 @@ function AuthenticatedShell({
   onSignOut,
   isSidebarExpanded,
   onToggleExpand,
+  isMobileNavOpen,
+  onOpenMobileNav,
+  onCloseMobileNav,
   masterModal,
   onCloseMasterModal,
   onSubmitMasterModal,
@@ -50,26 +53,53 @@ function AuthenticatedShell({
           onSignOut={onSignOut}
           isExpanded={isSidebarExpanded}
           onToggleExpand={onToggleExpand}
+          isMobileOpen={isMobileNavOpen}
+          onMobileClose={onCloseMobileNav}
         />
+
+        {isMobileNavOpen ? (
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            onClick={onCloseMobileNav}
+          />
+        ) : null}
 
         <div className="flex-1 h-screen overflow-y-auto bg-neu-bg dark:bg-darkNeu-bg relative flex flex-col">
           <div className="md:hidden h-16 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm flex items-center justify-between px-6 sticky top-0 z-10 shrink-0 mb-4">
-            <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
-              <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
-              Ledger
-            </h1>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onOpenMobileNav}
+                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
+                aria-label="Open menu"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+              <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
+                <Scale className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
+                Ledger
+              </h1>
+            </div>
             <div className="flex items-center gap-4">
               <button
                 type="button"
                 onClick={onToggleDarkMode}
                 className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
+                aria-label="Toggle theme"
               >
-                <Moon className="w-4 h-4" />
+                {isDarkMode ? (
+                  <Sun className="w-4 h-4" />
+                ) : (
+                  <Moon className="w-4 h-4" />
+                )}
               </button>
               <button
                 type="button"
                 onClick={onSignOut}
                 className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center hover:text-brand-negative"
+                aria-label="Sign out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -109,6 +139,7 @@ export default function App() {
   const [masterDebts, setMasterDebts] = useState([])
   const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode)
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [loadingMaster, setLoadingMaster] = useState(false)
   const [loadingDebts, setLoadingDebts] = useState(false)
 
@@ -375,6 +406,9 @@ export default function App() {
               onSignOut={signOut}
               isSidebarExpanded={isSidebarExpanded}
               onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
+              isMobileNavOpen={isMobileNavOpen}
+              onOpenMobileNav={() => setIsMobileNavOpen(true)}
+              onCloseMobileNav={() => setIsMobileNavOpen(false)}
               masterModal={masterModal}
               onCloseMasterModal={() =>
                 setMasterModal({ open: false, mode: 'create', data: null })
