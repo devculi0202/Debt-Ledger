@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Delete, Calculator as CalcIcon, Percent, Plus, Minus, Divide } from 'lucide-react'
+import logger from '../lib/logger'
 
 const BUTTONS = [
   ['C', '⌫', '%', '÷'],
@@ -53,7 +54,8 @@ function evaluate(expression, currentValue) {
     }
 
     return result
-  } catch {
+  } catch (err) {
+    logger.warn('Calculator expression parse failed', 'calculator', err)
     return NaN
   }
 }
