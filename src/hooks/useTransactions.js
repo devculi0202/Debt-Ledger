@@ -15,7 +15,6 @@ export default function useTransactions(session) {
     setLoading(false)
     if (error) {
       logger.error('Database connection failed', 'transactions', error)
-      alert('Database connection failed.')
       return
     }
     setDebts(data || [])
@@ -45,11 +44,7 @@ export default function useTransactions(session) {
 
   async function handleCreate(payload) {
     const { error } = await transactionsService.create(payload)
-    if (error) {
-      logger.error('Create transaction failed', 'transactions', error)
-      alert('Database Error: ' + error.message)
-      return
-    }
+    if (error) throw error
     closeModal()
     await fetchDebts()
   }
@@ -60,11 +55,7 @@ export default function useTransactions(session) {
       ...payload,
       paid: existing?.paid ?? false,
     })
-    if (error) {
-      logger.error('Update transaction failed', 'transactions', error)
-      alert('Database Error: ' + error.message)
-      return
-    }
+    if (error) throw error
     closeModal()
     await fetchDebts()
   }
@@ -87,7 +78,6 @@ export default function useTransactions(session) {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Delete this record? Action cannot be undone.')) return
     if (editingId === id) {
       closeModal()
     }
@@ -97,6 +87,7 @@ export default function useTransactions(session) {
     if (error) {
       logger.error(`Delete failed for ${id}`, 'transactions', error)
       setDebts(backup)
+      throw error
     }
   }
 

@@ -28,13 +28,15 @@ export default function useAuth() {
 
   async function signIn() {
     const { error } = await authService.signInWithGithub()
-    if (error) alert(error.message)
+    if (error) {
+      logger.error('Sign-in failed', 'auth', error)
+    }
   }
 
   async function signOut() {
     const { error } = await authService.signOut()
     if (error) {
-      alert(error.message)
+      logger.error('Sign-out failed', 'auth', error)
       return
     }
     navigate('/login', { replace: true })

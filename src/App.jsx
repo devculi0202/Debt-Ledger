@@ -9,6 +9,7 @@ import TransactionsPage from './pages/TransactionsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import Sidebar from './components/Sidebar'
 import Footer from './components/Footer'
+import { DataProvider } from './contexts/DataContext'
 import useAuth from './hooks/useAuth'
 import useTheme from './hooks/useTheme'
 
@@ -128,16 +129,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          session ? (
-            <Navigate to="/master-debts" replace />
-          ) : (
-            <LoginPage onSignIn={signIn} />
-          )
-        }
-      />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/login"
         element={
@@ -152,27 +144,23 @@ export default function App() {
       <Route element={<ProtectedRoute session={session} />}>
         <Route
           element={
-            <AuthenticatedShell
-              userName={userName}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={toggleDarkMode}
-              onSignOut={signOut}
-              isSidebarExpanded={isSidebarExpanded}
-              onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
-              isMobileNavOpen={isMobileNavOpen}
-              onOpenMobileNav={() => setIsMobileNavOpen(true)}
-              onCloseMobileNav={() => setIsMobileNavOpen(false)}
-            />
+            <DataProvider session={session}>
+              <AuthenticatedShell
+                userName={userName}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={toggleDarkMode}
+                onSignOut={signOut}
+                isSidebarExpanded={isSidebarExpanded}
+                onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
+                isMobileNavOpen={isMobileNavOpen}
+                onOpenMobileNav={() => setIsMobileNavOpen(true)}
+                onCloseMobileNav={() => setIsMobileNavOpen(false)}
+              />
+            </DataProvider>
           }
         >
-          <Route
-            path="/master-debts"
-            element={<MasterDebtsPage session={session} />}
-          />
-          <Route
-            path="/transactions"
-            element={<TransactionsPage session={session} />}
-          />
+          <Route path="/master-debts" element={<MasterDebtsPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
         </Route>
       </Route>
 

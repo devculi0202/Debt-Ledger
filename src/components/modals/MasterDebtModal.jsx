@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Layers, Pencil, X, ArrowDown, ArrowUp, LoaderCircle } from 'lucide-react'
+import { useToast } from '../ui/Toast'
 
 const emptyForm = {
   name: '',
@@ -17,6 +18,7 @@ export default function MasterDebtModal({
 }) {
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const toast = useToast()
 
   useEffect(() => {
     if (!open) return
@@ -45,7 +47,7 @@ export default function MasterDebtModal({
     const name = form.name.trim()
     const principal = parseInt(form.principal, 10)
     if (!name || isNaN(principal) || principal < 0) {
-      alert('Please fill in valid information.')
+      toast.warning('Please fill in valid information.')
       return
     }
 
