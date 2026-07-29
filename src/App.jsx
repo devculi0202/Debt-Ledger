@@ -8,6 +8,7 @@ import MasterDebtsPage from './pages/MasterDebtsPage'
 import TransactionsPage from './pages/TransactionsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import Sidebar from './components/Sidebar'
+import Footer from './components/Footer'
 import useAuth from './hooks/useAuth'
 import useTheme from './hooks/useTheme'
 
@@ -90,9 +91,7 @@ function AuthenticatedShell({
             <Outlet />
           </div>
 
-          <footer className="shrink-0 py-4 text-center text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
-            Copyright © 2026 devculi0202. All rights reserved.
-          </footer>
+          <Footer className="shrink-0" />
         </div>
       </div>
 
