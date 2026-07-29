@@ -11,24 +11,42 @@ import {
   LoaderCircle,
   FolderOpen,
 } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import {
+  parseTransactionFilters,
+  buildTransactionSearchParams,
+} from '../lib/transactionFilters'
 import { formatVND, isSettled } from '../lib/format'
 
 export default function TransactionLedger({
   debts,
   masterDebts,
   loading,
-  searchQuery,
-  statusFilter,
-  monthFilter,
   editingId,
-  onSearchChange,
-  onStatusFilterChange,
-  onMonthFilterChange,
   onOpenAdd,
   onTogglePaid,
   onEdit,
   onDelete,
 }) {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { accountId, time: monthFilter, status: statusFilter, q: searchQuery } =
+    parseTransactionFilters(searchParams)
+
+  function updateFilters(patch) {
+    const next = {
+      accountId,
+      time: monthFilter,
+      status: statusFilter,
+      q: searchQuery,
+      ...patch,
+    }
+    setSearchParams(buildTransactionSearchParams(next), { replace: true })
+  }
+
+  const filteredAccount = accountId
+    ? masterDebts.find((md) => String(md.id) === String(accountId))
+    : null
+
   const uniqueMonths = [
     ...new Set(
       debts.map((debt) => {
@@ -65,7 +83,9 @@ export default function TransactionLedger({
       statusFilter === 'all' ||
       (statusFilter === 'active' && !isSettled(debt.paid)) ||
       (statusFilter === 'settled' && isSettled(debt.paid))
-    return matchesMonth && matchesSearch && matchesStatus
+    const matchesAccount =
+      !accountId || String(debt.account_id) === String(accountId)
+    return matchesMonth && matchesSearch && matchesStatus && matchesAccount
   })
 
   filteredDebts.forEach((debt) => {
@@ -133,9 +153,27 @@ export default function TransactionLedger({
 
       <div className="bg-neu-surface dark:bg-darkNeu-surface p-6 md:p-8 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop flex flex-col">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 mb-2 gap-6 shrink-0">
-          <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
-            Transactions Ledger
-          </h3>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
+              Transactions Ledger
+            </h3>
+            {accountId ? (
+              <div className="flex items-center gap-3 text-xs font-medium text-neu-textMuted dark:text-darkNeu-textMuted">
+                <span>
+                  {filteredAccount
+                    ? `Filtered by account: ${filteredAccount.name}`
+                    : 'Account not found'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ accountId: null })}
+                  className="underline hover:opacity-80"
+                >
+                  Clear
+                </button>
+              </div>
+            ) : null}
+          </div>
 
           <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
             <button
@@ -148,7 +186,7 @@ export default function TransactionLedger({
 
             <select
               value={monthFilter}
-              onChange={(e) => onMonthFilterChange(e.target.value)}
+              onChange={(e) => updateFilters({ time: e.target.value })}
               className="bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 text-xs outline-none font-bold border-none appearance-none cursor-pointer pr-8 relative"
             >
               <option value="all">All Time</option>
@@ -164,7 +202,7 @@ export default function TransactionLedger({
 
             <select
               value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value)}
+              onChange={(e) => updateFilters({ status: e.target.value })}
               className="bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 text-xs outline-none font-bold border-none appearance-none cursor-pointer pr-8 relative"
             >
               <option value="all">All Statuses</option>
@@ -179,7 +217,7 @@ export default function TransactionLedger({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
+                onChange={(e) => updateFilters({ q: e.target.value })}
                 placeholder="Search..."
                 className="w-full sm:w-48 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 pl-10 text-xs outline-none border-none placeholder:text-neu-textMuted/50 font-medium"
               />
