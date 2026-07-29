@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import { supabase } from './lib/supabase'
 import { isSettled } from './lib/format'
+import { viewLedgerPath } from './lib/transactionFilters'
 import Sidebar from './components/Sidebar'
 import MasterDebtList from './components/MasterDebtList'
 import TransactionLedger from './components/TransactionLedger'
@@ -142,10 +143,6 @@ export default function App() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [loadingMaster, setLoadingMaster] = useState(false)
   const [loadingDebts, setLoadingDebts] = useState(false)
-
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [monthFilter, setMonthFilter] = useState('all')
 
   const [masterModal, setMasterModal] = useState({
     open: false,
@@ -356,10 +353,7 @@ export default function App() {
   }
 
   function handleViewLedger(account) {
-    setMonthFilter('all')
-    setStatusFilter('settled')
-    setSearchQuery(account.name)
-    navigate('/transactions')
+    navigate(viewLedgerPath(account.id))
   }
 
   const userName =
@@ -457,13 +451,7 @@ export default function App() {
                 debts={debts}
                 masterDebts={masterDebts}
                 loading={loadingDebts}
-                searchQuery={searchQuery}
-                statusFilter={statusFilter}
-                monthFilter={monthFilter}
                 editingId={editingId}
-                onSearchChange={setSearchQuery}
-                onStatusFilterChange={setStatusFilter}
-                onMonthFilterChange={setMonthFilter}
                 onOpenAdd={() =>
                   setTransactionModal({
                     open: true,
