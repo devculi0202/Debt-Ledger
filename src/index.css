@@ -55,6 +55,11 @@
   }
 }
 
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 @layer utilities {
   .transition-all-custom {
     transition-property: background-color, box-shadow, color, fill, stroke, opacity, transform, width;

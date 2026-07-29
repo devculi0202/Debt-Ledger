@@ -108,6 +108,8 @@ export default function Calculator({ open, onClose }) {
   }
   const onPointerUp = () => { dragState.current = null }
 
+  const handleButtonRef = useRef(null)
+
   const handleButton = (btn) => {
     if (btn === 'C') { reset(); return }
 
@@ -169,26 +171,28 @@ export default function Calculator({ open, onClose }) {
     }
   }
 
-  // Keyboard support
+  handleButtonRef.current = handleButton
+
   useEffect(() => {
     if (!open) return
     const handler = (e) => {
       const k = e.key
-      if (k >= '0' && k <= '9') handleButton(k)
-      else if (k === '.') handleButton('.')
-      else if (k === '+') handleButton('+')
-      else if (k === '-') handleButton('−')
-      else if (k === '*') handleButton('×')
-      else if (k === '/') { e.preventDefault(); handleButton('÷') }
-      else if (k === '%') handleButton('%')
-      else if (k === 'Enter' || k === '=') handleButton('=')
-      else if (k === 'Backspace') handleButton('⌫')
+      const press = (b) => handleButtonRef.current(b)
+      if (k >= '0' && k <= '9') press(k)
+      else if (k === '.') press('.')
+      else if (k === '+') press('+')
+      else if (k === '-') press('−')
+      else if (k === '*') press('×')
+      else if (k === '/') { e.preventDefault(); press('÷') }
+      else if (k === '%') press('%')
+      else if (k === 'Enter' || k === '=') press('=')
+      else if (k === 'Backspace') press('⌫')
       else if (k === 'Escape') onClose()
-      else if (k === 'Delete' || k.toLowerCase() === 'c') handleButton('C')
+      else if (k === 'Delete' || k.toLowerCase() === 'c') press('C')
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  })
+  }, [open, onClose])
 
   if (!open) return null
 

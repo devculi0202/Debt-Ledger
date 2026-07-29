@@ -1,9 +1,11 @@
-import useMasterDebts from '../hooks/useMasterDebts'
-import useTransactions from '../hooks/useTransactions'
+import { useMasterDebtsData, useTransactionsData } from '../contexts/DataContext'
 import MasterDebtList from '../components/MasterDebtList'
 import MasterDebtModal from '../components/modals/MasterDebtModal'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
+import useConfirm from '../hooks/useConfirm'
+import { useToast } from '../components/ui/Toast'
 
-export default function MasterDebtsPage({ session }) {
+export default function MasterDebtsPage() {
   const {
     masterDebts,
     loading,
@@ -12,10 +14,30 @@ export default function MasterDebtsPage({ session }) {
     openEdit,
     closeModal,
     handleSubmit,
-    handleDelete,
+    handleDelete: rawDelete,
     handleViewLedger,
-  } = useMasterDebts(session)
-  const { debts } = useTransactions(session)
+  } = useMasterDebtsData()
+  const { debts } = useTransactionsData()
+  const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm()
+  const toast = useToast()
+
+  async function handleDelete(id) {
+    const confirmed = await confirm(
+      'Delete Account',
+      'Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.',
+    )
+    if (!confirmed) return
+    await rawDelete(id, { skipConfirm: true })
+  }
+
+  async function onSubmit(payload) {
+    try {
+      await handleSubmit(payload)
+      toast.success(modal.mode === 'edit' ? 'Account updated.' : 'Account created.')
+    } catch {
+      toast.error('Operation failed.')
+    }
+  }
 
   return (
     <>
@@ -33,7 +55,14 @@ export default function MasterDebtsPage({ session }) {
         mode={modal.mode}
         initialData={modal.data}
         onClose={closeModal}
-        onSubmit={handleSubmit}
+        onSubmit={onSubmit}
+      />
+      <ConfirmDialog
+        open={confirmState.open}
+        title={confirmState.title}
+        message={confirmState.message}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
       />
     </>
   )

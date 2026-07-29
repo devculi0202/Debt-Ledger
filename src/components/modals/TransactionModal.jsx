@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Pencil, X, Link2, LoaderCircle } from 'lucide-react'
 import { formatVND } from '../../lib/format'
+import { useToast } from '../ui/Toast'
 
 const emptyForm = {
   type: 'owe',
@@ -22,6 +23,7 @@ export default function TransactionModal({
 }) {
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const toast = useToast()
 
   useEffect(() => {
     if (!open) return
@@ -55,7 +57,7 @@ export default function TransactionModal({
     e.preventDefault()
     const amt = parseInt(form.amount, 10)
     if (isNaN(amt) || amt < 0) {
-      alert('Vui lòng nhập số tiền hợp lệ')
+      toast.warning('Please enter a valid amount.')
       return
     }
 

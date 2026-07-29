@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as debtAccountsService from '../services/debtAccounts'
 import { viewLedgerPath } from '../lib/transactionFilters'
+import logger from '../lib/logger'
 
 export default function useMasterDebts(session) {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ export default function useMasterDebts(session) {
     const { data, error } = await debtAccountsService.fetchAll()
     setLoading(false)
     if (error) {
+      logger.error('Failed to fetch accounts', 'useMasterDebts', error)
       setMasterDebts([])
       return
     }
@@ -42,38 +44,22 @@ export default function useMasterDebts(session) {
 
   async function handleCreate(payload) {
     const { error } = await debtAccountsService.create(payload, session.user.id)
-    if (error) {
-      alert('Failed to create account.')
-      return
-    }
+    if (error) throw error
     closeModal()
     await fetchMasterDebts()
   }
 
   async function handleUpdate(payload) {
     const { error } = await debtAccountsService.update(modal.data.id, payload)
-    if (error) {
-      alert('Failed to update account.')
-      return
-    }
+    if (error) throw error
     closeModal()
     await fetchMasterDebts()
   }
 
   async function handleDelete(id) {
-    if (
-      !confirm(
-        'Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.',
-      )
-    ) {
-      return
-    }
     await debtAccountsService.unlinkTransactions(id)
     const { error } = await debtAccountsService.remove(id)
-    if (error) {
-      alert('Error deleting account.')
-      return
-    }
+    if (error) throw error
     await fetchMasterDebts()
   }
 
