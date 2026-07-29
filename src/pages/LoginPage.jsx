@@ -1,4 +1,5 @@
 import LedgerIcon from '../components/LedgerIcon'
+import Footer from '../components/Footer'
 
 function GitHubIcon({ className }) {
   return (
@@ -36,6 +37,8 @@ export default function LoginPage({ onSignIn }) {
             Continue with GitHub
           </button>
         </div>
+
+        <Footer className="absolute bottom-6" />
       </div>
     </div>
   )
