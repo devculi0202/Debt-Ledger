@@ -1,31 +1,14 @@
-import { useEffect, useState } from 'react'
-import {
-  Routes,
-  Route,
-  Navigate,
-  useNavigate,
-  Outlet,
-} from 'react-router-dom'
+import { useState } from 'react'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { Moon, Sun, LogOut, Menu } from 'lucide-react'
 import LedgerIcon from './components/LedgerIcon'
 import LoginPage from './pages/LoginPage'
+import MasterDebtsPage from './pages/MasterDebtsPage'
+import TransactionsPage from './pages/TransactionsPage'
 import ProtectedRoute from './components/ProtectedRoute'
-import { supabase } from './lib/supabase'
-import { isSettled } from './lib/format'
-import { viewLedgerPath } from './lib/transactionFilters'
 import Sidebar from './components/Sidebar'
-import MasterDebtList from './components/MasterDebtList'
-import TransactionLedger from './components/TransactionLedger'
-import MasterDebtModal from './components/modals/MasterDebtModal'
-import TransactionModal from './components/modals/TransactionModal'
-
-function getInitialDarkMode() {
-  if (typeof window === 'undefined') return false
-  const stored = localStorage.getItem('theme')
-  if (stored === 'dark') return true
-  if (stored === 'light') return false
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-}
+import useAuth from './hooks/useAuth'
+import useTheme from './hooks/useTheme'
 
 function AuthenticatedShell({
   userName,
@@ -37,13 +20,6 @@ function AuthenticatedShell({
   isMobileNavOpen,
   onOpenMobileNav,
   onCloseMobileNav,
-  masterModal,
-  onCloseMasterModal,
-  onSubmitMasterModal,
-  transactionModal,
-  masterDebts,
-  onCloseTransactionModal,
-  onSubmitTransactionModal,
 }) {
   return (
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
@@ -113,252 +89,15 @@ function AuthenticatedShell({
           </div>
         </div>
       </div>
-
-      <MasterDebtModal
-        open={masterModal.open}
-        mode={masterModal.mode}
-        initialData={masterModal.data}
-        onClose={onCloseMasterModal}
-        onSubmit={onSubmitMasterModal}
-      />
-
-      <TransactionModal
-        open={transactionModal.open}
-        mode={transactionModal.mode}
-        initialData={transactionModal.data}
-        masterDebts={masterDebts}
-        onClose={onCloseTransactionModal}
-        onSubmit={onSubmitTransactionModal}
-      />
     </div>
   )
 }
 
 export default function App() {
-  const navigate = useNavigate()
-  const [session, setSession] = useState(undefined)
-  const [debts, setDebts] = useState([])
-  const [masterDebts, setMasterDebts] = useState([])
-  const [isDarkMode, setIsDarkMode] = useState(getInitialDarkMode)
+  const { session, userName, signIn, signOut } = useAuth()
+  const { isDarkMode, toggleDarkMode } = useTheme()
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-  const [loadingMaster, setLoadingMaster] = useState(false)
-  const [loadingDebts, setLoadingDebts] = useState(false)
-
-  const [masterModal, setMasterModal] = useState({
-    open: false,
-    mode: 'create',
-    data: null,
-  })
-  const [transactionModal, setTransactionModal] = useState({
-    open: false,
-    mode: 'create',
-    data: null,
-  })
-  const [editingId, setEditingId] = useState(null)
-
-  useEffect(() => {
-    const root = document.documentElement
-    if (isDarkMode) {
-      root.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      root.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDarkMode])
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session ?? null)
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      setSession(nextSession)
-      if (event === 'SIGNED_IN' && nextSession) {
-        navigate('/master-debts', { replace: true })
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [navigate])
-
-  useEffect(() => {
-    if (!session) {
-      setDebts([])
-      setMasterDebts([])
-      return
-    }
-
-    fetchMasterDebts()
-    fetchDebts()
-  }, [session])
-
-  async function fetchMasterDebts() {
-    setLoadingMaster(true)
-    const { data, error } = await supabase
-      .from('debt_accounts')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setLoadingMaster(false)
-    if (error) {
-      setMasterDebts([])
-      return
-    }
-    setMasterDebts(data || [])
-  }
-
-  async function fetchDebts() {
-    setLoadingDebts(true)
-    const { data, error } = await supabase
-      .from('debts')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setLoadingDebts(false)
-    if (error) {
-      alert('Database connection failed.')
-      return
-    }
-    setDebts(data || [])
-  }
-
-  async function signInWithGithub() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-    })
-    if (error) alert(error.message)
-  }
-
-  async function signOut() {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      alert(error.message)
-      return
-    }
-    navigate('/login', { replace: true })
-  }
-
-  async function handleCreateMasterDebt(payload) {
-    const { error } = await supabase.from('debt_accounts').insert([
-      {
-        ...payload,
-        user_id: session.user.id,
-      },
-    ])
-    if (error) {
-      alert('Failed to create account.')
-      return
-    }
-    setMasterModal({ open: false, mode: 'create', data: null })
-    await fetchMasterDebts()
-  }
-
-  async function handleUpdateMasterDebt(payload) {
-    const { error } = await supabase
-      .from('debt_accounts')
-      .update(payload)
-      .eq('id', masterModal.data.id)
-    if (error) {
-      alert('Failed to update account.')
-      return
-    }
-    setMasterModal({ open: false, mode: 'create', data: null })
-    await fetchMasterDebts()
-    await fetchDebts()
-  }
-
-  async function handleDeleteMasterDebt(id) {
-    if (
-      !confirm(
-        'Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.',
-      )
-    ) {
-      return
-    }
-    await supabase.from('debts').update({ account_id: null }).eq('account_id', id)
-    const { error } = await supabase.from('debt_accounts').delete().eq('id', id)
-    if (error) {
-      alert('Error deleting account.')
-      return
-    }
-    await fetchMasterDebts()
-    await fetchDebts()
-  }
-
-  async function handleCreateTransaction(payload) {
-    const { error } = await supabase.from('debts').insert([
-      {
-        ...payload,
-        paid: false,
-      },
-    ])
-    if (error) {
-      alert('Database Error: ' + error.message)
-      return
-    }
-    setTransactionModal({ open: false, mode: 'create', data: null })
-    await fetchDebts()
-  }
-
-  async function handleUpdateTransaction(payload) {
-    const existing = debts.find((d) => d.id === transactionModal.data?.id)
-    const { error } = await supabase
-      .from('debts')
-      .update({
-        ...payload,
-        paid: existing?.paid ?? false,
-      })
-      .eq('id', transactionModal.data.id)
-    if (error) {
-      alert('Database Error: ' + error.message)
-      return
-    }
-    setEditingId(null)
-    setTransactionModal({ open: false, mode: 'create', data: null })
-    await fetchDebts()
-  }
-
-  async function handleTogglePaid(id) {
-    const debt = debts.find((d) => d.id === id)
-    if (!debt) return
-    const currentStatus = isSettled(debt.paid)
-    const newStatus = !currentStatus
-    setDebts((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, paid: newStatus } : d)),
-    )
-    const { error } = await supabase
-      .from('debts')
-      .update({ paid: newStatus })
-      .eq('id', id)
-    if (error) {
-      setDebts((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, paid: currentStatus } : d)),
-      )
-    }
-  }
-
-  async function handleDeleteDebt(id) {
-    if (!confirm('Delete this record? Action cannot be undone.')) return
-    if (editingId === id) {
-      setEditingId(null)
-      setTransactionModal({ open: false, mode: 'create', data: null })
-    }
-    const backup = debts
-    setDebts((prev) => prev.filter((d) => d.id !== id))
-    const { error } = await supabase.from('debts').delete().eq('id', id)
-    if (error) {
-      setDebts(backup)
-    }
-  }
-
-  function handleViewLedger(account) {
-    navigate(viewLedgerPath(account.id))
-  }
-
-  const userName =
-    session?.user?.user_metadata?.user_name || session?.user?.email || 'User'
 
   if (session === undefined) {
     return (
@@ -376,7 +115,7 @@ export default function App() {
           session ? (
             <Navigate to="/master-debts" replace />
           ) : (
-            <LoginPage onSignIn={signInWithGithub} />
+            <LoginPage onSignIn={signIn} />
           )
         }
       />
@@ -386,7 +125,7 @@ export default function App() {
           session ? (
             <Navigate to="/master-debts" replace />
           ) : (
-            <LoginPage onSignIn={signInWithGithub} />
+            <LoginPage onSignIn={signIn} />
           )
         }
       />
@@ -397,81 +136,23 @@ export default function App() {
             <AuthenticatedShell
               userName={userName}
               isDarkMode={isDarkMode}
-              onToggleDarkMode={() => setIsDarkMode((v) => !v)}
+              onToggleDarkMode={toggleDarkMode}
               onSignOut={signOut}
               isSidebarExpanded={isSidebarExpanded}
               onToggleExpand={() => setIsSidebarExpanded((v) => !v)}
               isMobileNavOpen={isMobileNavOpen}
               onOpenMobileNav={() => setIsMobileNavOpen(true)}
               onCloseMobileNav={() => setIsMobileNavOpen(false)}
-              masterModal={masterModal}
-              onCloseMasterModal={() =>
-                setMasterModal({ open: false, mode: 'create', data: null })
-              }
-              onSubmitMasterModal={
-                masterModal.mode === 'edit'
-                  ? handleUpdateMasterDebt
-                  : handleCreateMasterDebt
-              }
-              transactionModal={transactionModal}
-              masterDebts={masterDebts}
-              onCloseTransactionModal={() => {
-                setEditingId(null)
-                setTransactionModal({ open: false, mode: 'create', data: null })
-              }}
-              onSubmitTransactionModal={
-                transactionModal.mode === 'edit'
-                  ? handleUpdateTransaction
-                  : handleCreateTransaction
-              }
             />
           }
         >
           <Route
             path="/master-debts"
-            element={
-              <MasterDebtList
-                masterDebts={masterDebts}
-                debts={debts}
-                loading={loadingMaster}
-                onOpenCreate={() =>
-                  setMasterModal({ open: true, mode: 'create', data: null })
-                }
-                onEdit={(account) =>
-                  setMasterModal({ open: true, mode: 'edit', data: account })
-                }
-                onDelete={handleDeleteMasterDebt}
-                onViewLedger={handleViewLedger}
-              />
-            }
+            element={<MasterDebtsPage session={session} />}
           />
           <Route
             path="/transactions"
-            element={
-              <TransactionLedger
-                debts={debts}
-                masterDebts={masterDebts}
-                loading={loadingDebts}
-                editingId={editingId}
-                onOpenAdd={() =>
-                  setTransactionModal({
-                    open: true,
-                    mode: 'create',
-                    data: null,
-                  })
-                }
-                onTogglePaid={handleTogglePaid}
-                onEdit={(debt) => {
-                  setEditingId(debt.id)
-                  setTransactionModal({
-                    open: true,
-                    mode: 'edit',
-                    data: debt,
-                  })
-                }}
-                onDelete={handleDeleteDebt}
-              />
-            }
+            element={<TransactionsPage session={session} />}
           />
         </Route>
       </Route>
