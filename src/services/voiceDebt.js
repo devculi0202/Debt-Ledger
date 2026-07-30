@@ -26,23 +26,26 @@ async function handleResponse(res) {
   return data
 }
 
-export const submitText = async (text) => {
-  logger.info('Submitting text debt', CTX)
+async function postDebt(label, init, meta) {
+  logger.info(`Submitting ${label} debt`, CTX, meta)
   try {
-    const res = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-    })
+    const res = await fetch(ENDPOINT, init)
     return await handleResponse(res)
   } catch (err) {
     if (err instanceof TypeError) {
-      logger.error('Network error submitting text', CTX, err)
+      logger.error(`Network error submitting ${label}`, CTX, err)
       throw new Error('Could not reach the server. Please try again.', { cause: err })
     }
     throw err
   }
 }
+
+export const submitText = async (text) =>
+  postDebt('text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
 
 export const submitAudio = async (blob) => {
   const mime = blob.type || 'audio/webm'
@@ -50,18 +53,12 @@ export const submitAudio = async (blob) => {
   const form = new FormData()
   form.append('audio', blob, `recording.${ext}`)
 
-  logger.info('Submitting audio debt', CTX, { type: mime, size: blob.size })
-  try {
-    const res = await fetch(ENDPOINT, {
+  return postDebt(
+    'audio',
+    {
       method: 'POST',
       body: form,
-    })
-    return await handleResponse(res)
-  } catch (err) {
-    if (err instanceof TypeError) {
-      logger.error('Network error submitting audio', CTX, err)
-      throw new Error('Could not reach the server. Please try again.', { cause: err })
-    }
-    throw err
-  }
+    },
+    { type: mime, size: blob.size },
+  )
 }

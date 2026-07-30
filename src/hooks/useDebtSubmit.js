@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { submitText, submitAudio } from '../services/voiceDebt'
 import logger from '../lib/logger'
 
@@ -7,8 +7,22 @@ const CTX = 'useDebtSubmit'
 export default function useDebtSubmit() {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
+  const errorResetTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (errorResetTimerRef.current != null) {
+        clearTimeout(errorResetTimerRef.current)
+      }
+    }
+  }, [])
 
   const run = useCallback(async (fn) => {
+    if (errorResetTimerRef.current != null) {
+      clearTimeout(errorResetTimerRef.current)
+      errorResetTimerRef.current = null
+    }
+
     setStatus('processing')
     setError(null)
     try {
@@ -20,8 +34,9 @@ export default function useDebtSubmit() {
       setError(message)
       setStatus('error')
       logger.error('Debt submit failed', CTX, err)
-      // brief error state, then idle for next attempt
-      setTimeout(() => {
+      // Brief error state for UI tint, then idle for the next attempt
+      errorResetTimerRef.current = setTimeout(() => {
+        errorResetTimerRef.current = null
         setStatus((s) => (s === 'error' ? 'idle' : s))
       }, 0)
       return null
