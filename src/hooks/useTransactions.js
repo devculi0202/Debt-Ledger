@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import * as transactionsService from '../services/transactions'
+import { mapVoiceDebtToTransaction } from '../lib/voiceDebtMapper'
 import { isSettled } from '../lib/format'
 import logger from '../lib/logger'
 
@@ -46,6 +47,13 @@ export default function useTransactions(session) {
     const { error } = await transactionsService.create(payload)
     if (error) throw error
     closeModal()
+    await fetchDebts()
+  }
+
+  async function createFromVoice(apiResponse) {
+    const payload = mapVoiceDebtToTransaction(apiResponse)
+    const { error } = await transactionsService.create(payload)
+    if (error) throw error
     await fetchDebts()
   }
 
@@ -104,6 +112,7 @@ export default function useTransactions(session) {
     handleSubmit,
     handleTogglePaid,
     handleDelete,
+    createFromVoice,
     refetch: fetchDebts,
   }
 }

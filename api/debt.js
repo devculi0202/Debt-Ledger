@@ -125,6 +125,29 @@ function normalizeExtracted(data) {
   }
 }
 
+function toTransactionPayload(extracted) {
+  const today = new Date().toISOString().split('T')[0]
+  let type = 'owe'
+  let paid = false
+
+  if (extracted.action === 'lent') {
+    type = 'owed'
+  } else if (extracted.action === 'repaid') {
+    paid = true
+  }
+
+  return {
+    type,
+    person: extracted.person_name,
+    amount: Math.round(extracted.amount),
+    transaction_date: today,
+    due_date: null,
+    notes: extracted.reason || '',
+    account_id: null,
+    paid,
+  }
+}
+
 export default {
   async POST(request) {
     try {
@@ -156,8 +179,9 @@ export default {
       }
 
       const data = await extractDebtData(groq, sourceText)
+      const transaction = toTransactionPayload(data)
 
-      return jsonResponse({ success: true, data })
+      return jsonResponse({ success: true, data: transaction })
     } catch (err) {
       console.error('[api/debt]', err)
 

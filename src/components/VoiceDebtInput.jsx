@@ -33,9 +33,13 @@ export default function VoiceDebtInput({ onSuccess }) {
 
     const data = await submitTextDebt(value)
     if (data != null) {
-      toast.success('Debt submitted.')
       setText('')
-      onSuccess?.(data)
+      try {
+        await onSuccess?.(data)
+        toast.success('Transaction added.')
+      } catch {
+        toast.error('Failed to save transaction.')
+      }
     }
   }
 
@@ -68,8 +72,12 @@ export default function VoiceDebtInput({ onSuccess }) {
 
       const data = await submitAudioDebt(blob)
       if (data != null) {
-        toast.success('Voice debt submitted.')
-        onSuccess?.(data)
+        try {
+          await onSuccess?.(data)
+          toast.success('Transaction added.')
+        } catch {
+          toast.error('Failed to save transaction.')
+        }
       }
     } finally {
       endingRef.current = false
