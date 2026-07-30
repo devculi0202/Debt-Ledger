@@ -12,8 +12,9 @@ export const fetchAll = async () => {
 }
 
 export const create = async (payload) => {
-  logger.info('Creating debt', CTX, payload)
-  const result = await supabase.from('debts').insert([{ ...payload, paid: false }])
+  const { paid = false, ...rest } = payload
+  logger.info('Creating debt', CTX, { ...rest, paid })
+  const result = await supabase.from('debts').insert([{ ...rest, paid }])
   if (result.error) logger.error('Create failed', CTX, result.error)
   return result
 }
