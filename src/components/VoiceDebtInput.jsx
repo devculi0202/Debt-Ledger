@@ -12,6 +12,7 @@ export default function VoiceDebtInput({ onSuccess }) {
   const { status, error: submitError, submitTextDebt, submitAudioDebt } =
     useDebtSubmit()
   const holdingRef = useRef(false)
+  const endingRef = useRef(false)
 
   const isProcessing = status === 'processing'
   const hasError = status === 'error' || !!recorderError
@@ -49,21 +50,29 @@ export default function VoiceDebtInput({ onSuccess }) {
     }
     await start()
     // User released before getUserMedia / recorder finished starting
-    if (!holdingRef.current) {
+    if (!holdingRef.current && !endingRef.current) {
       await stop()
     }
   }
 
   const handlePointerEnd = async () => {
+    if (endingRef.current) return
     if (!holdingRef.current && !isRecording) return
-    holdingRef.current = false
-    const blob = await stop()
-    if (!blob) return
 
-    const data = await submitAudioDebt(blob)
-    if (data != null) {
-      toast.success('Voice debt submitted.')
-      onSuccess?.(data)
+    endingRef.current = true
+    holdingRef.current = false
+
+    try {
+      const blob = await stop()
+      if (!blob) return
+
+      const data = await submitAudioDebt(blob)
+      if (data != null) {
+        toast.success('Voice debt submitted.')
+        onSuccess?.(data)
+      }
+    } finally {
+      endingRef.current = false
     }
   }
 
