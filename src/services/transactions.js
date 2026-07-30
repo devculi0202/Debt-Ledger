@@ -5,7 +5,11 @@ const CTX = 'transactions'
 
 export const fetchAll = async () => {
   logger.debug('Fetching all debts', CTX)
-  const result = await supabase.from('debts').select('*').order('created_at', { ascending: false })
+  const result = await supabase
+    .from('debts')
+    .select('*')
+    .order('transaction_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
   if (result.error) logger.error('fetchAll failed', CTX, result.error)
   else logger.debug(`Fetched ${result.data?.length ?? 0} debts`, CTX)
   return result
