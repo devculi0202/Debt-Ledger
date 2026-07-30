@@ -160,6 +160,13 @@ export default {
 
       const { text, audio } = await parseRequestBody(request)
 
+      console.log('[api/debt] input', {
+        type: audio ? 'audio' : 'text',
+        text: text || null,
+        audioSize: audio?.size ?? null,
+        audioType: audio?.type ?? null,
+      })
+
       if (!text && !audio) {
         return jsonResponse(
           { error: 'Provide either JSON body { "text": "..." } or multipart field "audio".' },
@@ -172,6 +179,7 @@ export default {
 
       if (audio) {
         sourceText = await transcribeAudio(groq, audio)
+        console.log('[api/debt] transcript', sourceText)
       }
 
       if (!sourceText) {
@@ -181,9 +189,11 @@ export default {
       const data = await extractDebtData(groq, sourceText)
       const transaction = toTransactionPayload(data)
 
+      console.log('[api/debt] response', { success: true, data: transaction })
+
       return jsonResponse({ success: true, data: transaction })
     } catch (err) {
-      console.error('[api/debt]', err)
+      console.error('[api/debt] error', { message: err?.message, stack: err?.stack })
 
       const message = err?.message || 'Internal server error'
       const status =
