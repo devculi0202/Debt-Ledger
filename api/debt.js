@@ -15,6 +15,8 @@ Return ONLY a valid JSON object with exactly these keys:
   - "repaid": the speaker paid back a debt (trả nợ / trả lại / đã trả)
 - reason (string): short description; exclude due-date-only phrases if captured in due_date
 - due_date (string|null): ISO date YYYY-MM-DD when repayment timing is mentioned, otherwise null
+  - "tháng sau" / "tháng tới" → last day of the next calendar month from today
+  - "tháng này" → last day of the current calendar month
   - "tháng 8 trả" / "trả tháng 8" → last day of August (e.g. 2026-08-31); use current year, or next year if that month already passed
   - "ngày 15 tháng 9" → 2026-09-15 with the same year rule
   - vague timing with no month/day → null
@@ -127,9 +129,29 @@ function parseIsoDate(value) {
   return s
 }
 
+function endOfMonth(year, month1to12) {
+  const lastDay = new Date(year, month1to12, 0).getDate()
+  return `${year}-${String(month1to12).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+}
+
 function inferDueDateFromText(text, reference = new Date()) {
+  // Relative month phrases — check before numeric patterns
+  if (/th[aá]ng\s+(?:sau|t[iớ]i|toi)\b/i.test(text)) {
+    let month = reference.getMonth() + 2
+    let year = reference.getFullYear()
+    if (month > 12) {
+      month -= 12
+      year += 1
+    }
+    return endOfMonth(year, month)
+  }
+
+  if (/th[aá]ng\s+n[aà]y\b/i.test(text)) {
+    return endOfMonth(reference.getFullYear(), reference.getMonth() + 1)
+  }
+
   const dayMonth = text.match(
-    /(?:ngày\s*)?(\d{1,2})\s*th[aá]ng\s*(\d{1,2})/i,
+    /(?:ngày\s*)?(\d{1,2})\s*th[aá]ng\s*(\d{1,2})\b/i,
   )
   if (dayMonth) {
     const day = parseInt(dayMonth[1], 10)
@@ -146,7 +168,7 @@ function inferDueDateFromText(text, reference = new Date()) {
     }
   }
 
-  const monthOnly = text.match(/th[aá]ng\s*(\d{1,2})(?:\s*tr[aả])?/i)
+  const monthOnly = text.match(/th[aá]ng\s*(\d{1,2})\b(?:\s*tr[aả])?/i)
   if (!monthOnly) return null
 
   const month = parseInt(monthOnly[1], 10)
@@ -155,8 +177,7 @@ function inferDueDateFromText(text, reference = new Date()) {
   let year = reference.getFullYear()
   if (month < reference.getMonth() + 1) year += 1
 
-  const lastDay = new Date(year, month, 0).getDate()
-  return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+  return endOfMonth(year, month)
 }
 
 function normalizeVndAmount(amount, text) {
@@ -193,9 +214,9 @@ function normalizeExtracted(data, sourceText = '') {
   const action = String(data?.action ?? '').trim().toLowerCase()
   const reason = String(data?.reason ?? '').trim()
 
-  let due_date = parseIsoDate(data?.due_date)
-  if (!due_date && sourceText) {
-    due_date = inferDueDateFromText(sourceText)
+  let due_date = sourceText ? inferDueDateFromText(sourceText) : null
+  if (!due_date) {
+    due_date = parseIsoDate(data?.due_date)
   }
 
   if (!person_name) {
