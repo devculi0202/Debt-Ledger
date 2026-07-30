@@ -26,6 +26,7 @@ export default function TransactionLedger({
   onTogglePaid,
   onEdit,
   onDelete,
+  onDuplicate,
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const filters = parseTransactionFilters(searchParams)
@@ -77,6 +78,7 @@ export default function TransactionLedger({
             onTogglePaid={onTogglePaid}
             onEdit={onEdit}
             onDelete={onDelete}
+            onDuplicate={onDuplicate}
           />
 
           {loading && <LoadingSpinner message="Syncing database..." />}

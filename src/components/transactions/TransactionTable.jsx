@@ -5,6 +5,7 @@ import {
   RotateCcw,
   Pencil,
   Trash2,
+  Copy,
   Link2,
 } from 'lucide-react'
 import { formatVND, isSettled } from '../../lib/format'
@@ -17,6 +18,7 @@ export default function TransactionTable({
   onTogglePaid,
   onEdit,
   onDelete,
+  onDuplicate,
 }) {
   if (debts.length === 0) return null
 
@@ -42,6 +44,7 @@ export default function TransactionTable({
             onTogglePaid={onTogglePaid}
             onEdit={onEdit}
             onDelete={onDelete}
+            onDuplicate={onDuplicate}
           />
         ))}
       </tbody>
@@ -56,6 +59,7 @@ function TransactionRow({
   onTogglePaid,
   onEdit,
   onDelete,
+  onDuplicate,
 }) {
   const settled = isSettled(debt.paid)
   const badgeColor = settled
@@ -169,6 +173,14 @@ function TransactionRow({
           title="Delete"
         >
           <Trash2 className="w-3.5 h-3.5" />
+        </NeuIconButton>
+        <NeuIconButton
+          size="sm"
+          onClick={() => onDuplicate(debt)}
+          className="hover:text-neu-primary"
+          title="Duplicate to months"
+        >
+          <Copy className="w-3.5 h-3.5" />
         </NeuIconButton>
       </td>
     </tr>

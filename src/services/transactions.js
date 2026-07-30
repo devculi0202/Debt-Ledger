@@ -19,6 +19,14 @@ export const create = async (payload) => {
   return result
 }
 
+export const createMany = async (payloads) => {
+  const rows = payloads.map(({ paid = false, ...rest }) => ({ ...rest, paid }))
+  logger.info(`Creating ${rows.length} debts`, CTX)
+  const result = await supabase.from('debts').insert(rows)
+  if (result.error) logger.error('createMany failed', CTX, result.error)
+  return result
+}
+
 export const update = async (id, payload) => {
   logger.info(`Updating debt ${id}`, CTX, payload)
   const result = await supabase.from('debts').update(payload).eq('id', id)
