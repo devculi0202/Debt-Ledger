@@ -1,7 +1,17 @@
 import { isSettled } from './format'
 
+export function getTransactionDate(debt) {
+  return debt.transaction_date || debt.created_at.split('T')[0]
+}
+
 function getMonth(debt) {
-  return (debt.transaction_date || debt.created_at.split('T')[0]).substring(0, 7)
+  return getTransactionDate(debt).substring(0, 7)
+}
+
+export function sortByDateDesc(debts) {
+  return [...debts].sort((a, b) =>
+    getTransactionDate(b).localeCompare(getTransactionDate(a)),
+  )
 }
 
 export function getUniqueMonths(debts) {

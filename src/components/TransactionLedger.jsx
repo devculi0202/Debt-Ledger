@@ -1,17 +1,20 @@
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   parseTransactionFilters,
   buildTransactionSearchParams,
 } from '../lib/transactionFilters'
-import { formatVND } from '../lib/format'
 import {
   getUniqueMonths,
   filterTransactions,
   computeTotals,
+  sortByDateDesc,
 } from '../lib/transactionCompute'
+import { paginate } from '../lib/pagination'
 import NeuCard from './ui/NeuCard'
 import LoadingSpinner from './ui/LoadingSpinner'
 import EmptyState from './ui/EmptyState'
+import Pagination from './ui/Pagination'
 import SummaryCards from './transactions/SummaryCards'
 import FilterBar from './transactions/FilterBar'
 import TransactionTable from './transactions/TransactionTable'
@@ -29,11 +32,13 @@ export default function TransactionLedger({
   onDuplicate,
 }) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [page, setPage] = useState(1)
   const filters = parseTransactionFilters(searchParams)
 
   function updateFilters(patch) {
     const next = { ...filters, ...patch }
     setSearchParams(buildTransactionSearchParams(next), { replace: true })
+    setPage(1)
   }
 
   const filteredAccount = filters.accountId
@@ -41,8 +46,19 @@ export default function TransactionLedger({
     : null
 
   const uniqueMonths = getUniqueMonths(debts)
-  const filteredDebts = filterTransactions(debts, masterDebts, filters)
+  const filteredDebts = sortByDateDesc(
+    filterTransactions(debts, masterDebts, filters),
+  )
   const { totalReceivables, totalLiabilities, net } = computeTotals(filteredDebts)
+
+  const { items: pagedDebts, page: safePage, totalCount, totalPages } = paginate(
+    filteredDebts,
+    page,
+  )
+
+  useEffect(() => {
+    setPage(1)
+  }, [filters.accountId, filters.time, filters.status, filters.q])
 
   const periodText =
     filters.time === 'all'
@@ -72,7 +88,7 @@ export default function TransactionLedger({
 
         <div className="overflow-x-auto pb-4">
           <TransactionTable
-            debts={filteredDebts}
+            debts={pagedDebts}
             masterDebts={masterDebts}
             editingId={editingId}
             onTogglePaid={onTogglePaid}
@@ -85,6 +101,15 @@ export default function TransactionLedger({
 
           {!loading && filteredDebts.length === 0 && (
             <EmptyState icon={FolderOpen} message="No records found" />
+          )}
+
+          {!loading && filteredDebts.length > 0 && (
+            <Pagination
+              page={safePage}
+              totalPages={totalPages}
+              totalCount={totalCount}
+              onPageChange={setPage}
+            />
           )}
         </div>
       </NeuCard>

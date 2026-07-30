@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Plus,
   Smartphone,
@@ -9,10 +10,12 @@ import {
 } from 'lucide-react'
 import { formatVND } from '../lib/format'
 import { computeAccountSummary } from '../lib/accountSummary'
+import { paginate } from '../lib/pagination'
 import LoadingSpinner from './ui/LoadingSpinner'
 import NeuCard from './ui/NeuCard'
 import NeuIconButton from './ui/NeuIconButton'
 import NeuButton from './ui/NeuButton'
+import Pagination from './ui/Pagination'
 
 export default function MasterDebtList({
   masterDebts,
@@ -23,6 +26,17 @@ export default function MasterDebtList({
   onDelete,
   onViewLedger,
 }) {
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [masterDebts.length])
+
+  const { items: pagedDebts, page: safePage, totalCount, totalPages } = paginate(
+    masterDebts,
+    page,
+  )
+
   if (loading) {
     return (
       <div className="space-y-8">
@@ -54,7 +68,7 @@ export default function MasterDebtList({
         </button>
       ) : (
         <div className="space-y-8 mt-8">
-          {masterDebts.map((account) => (
+          {pagedDebts.map((account) => (
             <AccountCard
               key={account.id}
               account={account}
@@ -64,6 +78,12 @@ export default function MasterDebtList({
               onViewLedger={onViewLedger}
             />
           ))}
+          <Pagination
+            page={safePage}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setPage}
+          />
         </div>
       )}
     </div>
