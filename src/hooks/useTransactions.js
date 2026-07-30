@@ -9,6 +9,7 @@ export default function useTransactions(session) {
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [modal, setModal] = useState({ open: false, mode: 'create', data: null })
+  const [duplicateModal, setDuplicateModal] = useState({ open: false, source: null })
 
   const fetchDebts = useCallback(async () => {
     setLoading(true)
@@ -41,6 +42,14 @@ export default function useTransactions(session) {
   function closeModal() {
     setEditingId(null)
     setModal({ open: false, mode: 'create', data: null })
+  }
+
+  function openDuplicate(source) {
+    setDuplicateModal({ open: true, source })
+  }
+
+  function closeDuplicateModal() {
+    setDuplicateModal({ open: false, source: null })
   }
 
   async function handleCreate(payload) {
@@ -85,6 +94,13 @@ export default function useTransactions(session) {
     }
   }
 
+  async function handleDuplicateMonths(payloads) {
+    const { error } = await transactionsService.createMany(payloads)
+    if (error) throw error
+    closeDuplicateModal()
+    await fetchDebts()
+  }
+
   async function handleDelete(id) {
     if (editingId === id) {
       closeModal()
@@ -106,12 +122,16 @@ export default function useTransactions(session) {
     loading,
     editingId,
     modal,
+    duplicateModal,
     openAdd,
     openEdit,
     closeModal,
+    openDuplicate,
+    closeDuplicateModal,
     handleSubmit,
     handleTogglePaid,
     handleDelete,
+    handleDuplicateMonths,
     createFromVoice,
     refetch: fetchDebts,
   }
