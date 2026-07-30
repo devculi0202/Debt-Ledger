@@ -40,6 +40,8 @@ export default function useMediaRecorder() {
   const streamRef = useRef(null)
   const chunksRef = useRef([])
   const stopPromiseRef = useRef(null)
+  const stopResolveRef = useRef(null)
+  const startingRef = useRef(false)
 
   const releaseStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop())
@@ -50,6 +52,8 @@ export default function useMediaRecorder() {
     mediaRecorderRef.current = null
     chunksRef.current = []
     stopPromiseRef.current = null
+    stopResolveRef.current = null
+    startingRef.current = false
   }, [])
 
   useEffect(() => {
@@ -74,7 +78,9 @@ export default function useMediaRecorder() {
       return
     }
     if (mediaRecorderRef.current?.state === 'recording') return
+    if (startingRef.current) return
 
+    startingRef.current = true
     setError(null)
     chunksRef.current = []
 
@@ -100,12 +106,14 @@ export default function useMediaRecorder() {
         setError(msg)
         logger.error(msg, CTX, event.error)
         setIsRecording(false)
+        stopResolveRef.current?.(null)
         releaseStream()
         resetRecorder()
       }
 
       recorder.start()
       setIsRecording(true)
+      startingRef.current = false
       logger.debug('Recording started', CTX, { mimeType: recorder.mimeType })
     } catch (err) {
       const msg = permissionMessage(err)
@@ -129,7 +137,12 @@ export default function useMediaRecorder() {
     if (stopPromiseRef.current) return stopPromiseRef.current
 
     stopPromiseRef.current = new Promise((resolve) => {
+      stopResolveRef.current = resolve
+
       recorder.onstop = () => {
+        const finish = stopResolveRef.current
+        if (!finish) return
+
         const type = recorder.mimeType || pickMimeType() || 'audio/webm'
         const blob =
           chunksRef.current.length > 0
@@ -142,11 +155,11 @@ export default function useMediaRecorder() {
 
         if (!blob || blob.size === 0) {
           logger.debug('Empty recording discarded', CTX)
-          resolve(null)
+          finish(null)
           return
         }
         logger.debug('Recording stopped', CTX, { size: blob.size, type: blob.type })
-        resolve(blob)
+        finish(blob)
       }
 
       try {
@@ -154,9 +167,9 @@ export default function useMediaRecorder() {
       } catch (err) {
         logger.warn('stop() failed', CTX, err)
         setIsRecording(false)
+        stopResolveRef.current?.(null)
         releaseStream()
         resetRecorder()
-        resolve(null)
       }
     })
 
