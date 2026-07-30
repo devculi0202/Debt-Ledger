@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon } from 'lucide-react'
 import LedgerIcon from './components/LedgerIcon'
 import Calculator from './components/Calculator'
+import VoiceDebtInput from './components/VoiceDebtInput'
 import LoginPage from './pages/LoginPage'
 import MasterDebtsPage from './pages/MasterDebtsPage'
 import TransactionsPage from './pages/TransactionsPage'
@@ -95,6 +96,13 @@ function AuthenticatedShell({
           <Footer className="shrink-0" />
         </div>
       </div>
+
+      <VoiceDebtInput
+        onSuccess={(data) => {
+          // Parent may refresh lists or open a confirm modal later
+          console.debug('[VoiceDebtInput] success', data)
+        }}
+      />
 
       {/* Calculator FAB */}
       {!calcOpen && (
