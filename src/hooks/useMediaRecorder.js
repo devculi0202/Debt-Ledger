@@ -42,6 +42,7 @@ export default function useMediaRecorder() {
   const stopPromiseRef = useRef(null)
   const stopResolveRef = useRef(null)
   const startingRef = useRef(false)
+  const startIdRef = useRef(0)
 
   const releaseStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop())
@@ -49,6 +50,7 @@ export default function useMediaRecorder() {
   }, [])
 
   const resetRecorder = useCallback(() => {
+    startIdRef.current += 1
     mediaRecorderRef.current = null
     chunksRef.current = []
     stopPromiseRef.current = null
@@ -83,9 +85,15 @@ export default function useMediaRecorder() {
     startingRef.current = true
     setError(null)
     chunksRef.current = []
+    const session = startIdRef.current
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (session !== startIdRef.current) {
+        stream.getTracks().forEach((t) => t.stop())
+        startingRef.current = false
+        return
+      }
       streamRef.current = stream
 
       const mimeType = pickMimeType()
@@ -109,6 +117,14 @@ export default function useMediaRecorder() {
         stopResolveRef.current?.(null)
         releaseStream()
         resetRecorder()
+      }
+
+      if (session !== startIdRef.current) {
+        stream.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+        mediaRecorderRef.current = null
+        startingRef.current = false
+        return
       }
 
       recorder.start()
