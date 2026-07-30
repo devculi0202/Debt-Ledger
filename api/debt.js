@@ -6,14 +6,26 @@ const VALID_ACTIONS = new Set(['lent', 'borrowed', 'repaid'])
 
 const SYSTEM_PROMPT = `You extract debt transaction information from Vietnamese natural language (or English).
 Return ONLY a valid JSON object with exactly these keys:
-- person_name (string): the other person's name
-- amount (number): numeric amount only, no currency symbols or separators
+- person_name (string): the other person's name (proper capitalization, e.g. "Minh" not "minh")
+- amount (number): total amount in VND as a plain integer (no separators, no currency symbols)
 - currency (string): default "VND" if not specified
 - action (string): exactly one of "lent", "borrowed", or "repaid"
-  - "lent": the speaker lent money to someone (cho vay / cho mượn)
-  - "borrowed": the speaker borrowed money from someone (vay / mượn)
-  - "repaid": the speaker paid back a debt (trả nợ / trả lại)
-- reason (string): short description of the debt or transaction
+  - "lent": the speaker lent money to someone (cho vay / cho mượn / cho ... mượn)
+  - "borrowed": the speaker borrowed money from someone (vay / mượn từ / đi vay)
+  - "repaid": the speaker paid back a debt (trả nợ / trả lại / đã trả)
+- reason (string): short description; exclude due-date-only phrases if captured in due_date
+- due_date (string|null): ISO date YYYY-MM-DD when repayment timing is mentioned, otherwise null
+  - "tháng 8 trả" / "trả tháng 8" → last day of August (e.g. 2026-08-31); use current year, or next year if that month already passed
+  - "ngày 15 tháng 9" → 2026-09-15 with the same year rule
+  - vague timing with no month/day → null
+
+Vietnamese amount rules (always convert to full VND integer before returning amount):
+- 1 triệu = 1,000,000
+- 1 nghìn / 1 ngàn = 1,000
+- 1 tỷ = 1,000,000,000
+- "200 triệu" → amount: 200000000
+- "1 triệu rưỡi" / "1.5 triệu" → amount: 1500000
+- "500 nghìn" → amount: 500000
 
 Do not include markdown, code fences, or extra keys.`
 
@@ -96,15 +108,95 @@ async function extractDebtData(groq, sourceText) {
     throw new Error('Model returned invalid JSON.')
   }
 
-  return normalizeExtracted(parsed)
+  return normalizeExtracted(parsed, sourceText)
 }
 
-function normalizeExtracted(data) {
+function parseIsoDate(value) {
+  if (value == null || value === '') return null
+  const s = String(value).trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null
+  const [y, m, d] = s.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== m - 1 ||
+    date.getDate() !== d
+  ) {
+    return null
+  }
+  return s
+}
+
+function inferDueDateFromText(text, reference = new Date()) {
+  const dayMonth = text.match(
+    /(?:ngày\s*)?(\d{1,2})\s*th[aá]ng\s*(\d{1,2})/i,
+  )
+  if (dayMonth) {
+    const day = parseInt(dayMonth[1], 10)
+    const month = parseInt(dayMonth[2], 10)
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      let year = reference.getFullYear()
+      const nowMonth = reference.getMonth() + 1
+      const nowDay = reference.getDate()
+      if (month < nowMonth || (month === nowMonth && day < nowDay)) {
+        year += 1
+      }
+      const candidate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      return parseIsoDate(candidate)
+    }
+  }
+
+  const monthOnly = text.match(/th[aá]ng\s*(\d{1,2})(?:\s*tr[aả])?/i)
+  if (!monthOnly) return null
+
+  const month = parseInt(monthOnly[1], 10)
+  if (month < 1 || month > 12) return null
+
+  let year = reference.getFullYear()
+  if (month < reference.getMonth() + 1) year += 1
+
+  const lastDay = new Date(year, month, 0).getDate()
+  return `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+}
+
+function normalizeVndAmount(amount, text) {
+  let n = Number(amount)
+  if (!Number.isFinite(n) || n <= 0) return n
+
+  const tyMatch = text.match(/(\d+(?:[.,]\d+)?)\s*t[yỷ]/i)
+  if (tyMatch) {
+    return Math.round(parseFloat(tyMatch[1].replace(',', '.')) * 1_000_000_000)
+  }
+
+  const trieuMatch = text.match(/(\d+(?:[.,]\d+)?)\s*tri[eệ]u/i)
+  if (trieuMatch) {
+    return Math.round(parseFloat(trieuMatch[1].replace(',', '.')) * 1_000_000)
+  }
+
+  const nghinMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:ngh[iì]n|ng[aà]n)/i)
+  if (nghinMatch) {
+    return Math.round(parseFloat(nghinMatch[1].replace(',', '.')) * 1_000)
+  }
+
+  // Model returned bare millions count without scaling (e.g. 200 for "200 triệu")
+  if (n < 1_000_000 && /tri[eệ]u/i.test(text)) {
+    return Math.round(n * 1_000_000)
+  }
+
+  return Math.round(n)
+}
+
+function normalizeExtracted(data, sourceText = '') {
   const person_name = String(data?.person_name ?? '').trim()
-  const amount = Number(data?.amount)
+  let amount = normalizeVndAmount(Number(data?.amount), sourceText)
   const currency = String(data?.currency ?? 'VND').trim() || 'VND'
   const action = String(data?.action ?? '').trim().toLowerCase()
   const reason = String(data?.reason ?? '').trim()
+
+  let due_date = parseIsoDate(data?.due_date)
+  if (!due_date && sourceText) {
+    due_date = inferDueDateFromText(sourceText)
+  }
 
   if (!person_name) {
     throw new Error('Could not identify a person name from the input.')
@@ -122,6 +214,7 @@ function normalizeExtracted(data) {
     currency,
     action,
     reason,
+    due_date,
   }
 }
 
@@ -141,7 +234,7 @@ function toTransactionPayload(extracted) {
     person: extracted.person_name,
     amount: Math.round(extracted.amount),
     transaction_date: today,
-    due_date: null,
+    due_date: extracted.due_date ?? null,
     notes: extracted.reason || '',
     account_id: null,
     paid,

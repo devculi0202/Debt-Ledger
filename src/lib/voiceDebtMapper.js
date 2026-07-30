@@ -29,10 +29,12 @@ export function mapVoiceDebtToTransaction(response) {
     }
   }
 
-  // Legacy extraction shape (person_name, action, reason)
+  // Legacy extraction shape (person_name, action, reason, due_date)
   const person = String(data.person_name ?? data.person ?? '').trim()
   const amount = Math.round(Number(data.amount))
   const action = String(data.action ?? '').trim().toLowerCase()
+  const due_date =
+    data.due_date != null ? parseIsoDateOrNull(data.due_date) : null
 
   if (!person) throw new Error('Could not identify a person from the response.')
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -44,9 +46,16 @@ export function mapVoiceDebtToTransaction(response) {
     person,
     amount,
     transaction_date: todayIsoDate(),
-    due_date: null,
+    due_date,
     notes: data.reason != null ? String(data.reason) : data.notes != null ? String(data.notes) : '',
     account_id: null,
     paid: action === 'repaid',
   }
+}
+
+function parseIsoDateOrNull(value) {
+  if (value == null || value === '') return null
+  const s = String(value).trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null
+  return s
 }
