@@ -7,6 +7,7 @@ import VoiceDebtInputConnected from './components/VoiceDebtInputConnected'
 import LoginPage from './pages/LoginPage'
 import MasterDebtsPage from './pages/MasterDebtsPage'
 import TransactionsPage from './pages/TransactionsPage'
+import RemindersPage from './pages/RemindersPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import Sidebar from './components/Sidebar'
 import Footer from './components/Footer'
@@ -164,6 +165,7 @@ export default function App() {
         >
           <Route path="/master-debts" element={<MasterDebtsPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/reminders" element={<RemindersPage />} />
         </Route>
       </Route>
 

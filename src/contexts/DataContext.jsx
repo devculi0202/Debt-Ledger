@@ -9,10 +9,16 @@ export function DataProvider({ session, children }) {
   const transactionsHook = useTransactions(session)
 
   return (
-    <DataContext.Provider value={{ masterDebtsHook, transactionsHook }}>
+    <DataContext.Provider value={{ session, masterDebtsHook, transactionsHook }}>
       {children}
     </DataContext.Provider>
   )
+}
+
+export function useSessionData() {
+  const ctx = useContext(DataContext)
+  if (!ctx) throw new Error('useSessionData must be used within DataProvider')
+  return ctx.session
 }
 
 export function useMasterDebtsData() {

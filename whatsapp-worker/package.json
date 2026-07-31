@@ -1,0 +1,22 @@
+{
+  "name": "debt-ledger-whatsapp-worker",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@supabase/supabase-js": "^2.111.0",
+    "@whiskeysockets/baileys": "^6.7.18",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4"
+  }
+}
