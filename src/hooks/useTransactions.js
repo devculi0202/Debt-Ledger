@@ -53,7 +53,10 @@ export default function useTransactions(session) {
   }
 
   async function handleCreate(payload) {
-    const { error } = await transactionsService.create(payload)
+    const { error } = await transactionsService.create({
+      ...payload,
+      user_id: session?.user?.id ?? null,
+    })
     if (error) throw error
     closeModal()
     await fetchDebts()
@@ -61,7 +64,10 @@ export default function useTransactions(session) {
 
   async function createFromVoice(apiResponse) {
     const payload = mapVoiceDebtToTransaction(apiResponse)
-    const { error } = await transactionsService.create(payload)
+    const { error } = await transactionsService.create({
+      ...payload,
+      user_id: session?.user?.id ?? null,
+    })
     if (error) throw error
     await fetchDebts()
   }
@@ -95,7 +101,9 @@ export default function useTransactions(session) {
   }
 
   async function handleDuplicateMonths(payloads) {
-    const { error } = await transactionsService.createMany(payloads)
+    const userId = session?.user?.id ?? null
+    const rows = payloads.map((p) => ({ ...p, user_id: userId }))
+    const { error } = await transactionsService.createMany(rows)
     if (error) throw error
     closeDuplicateModal()
     await fetchDebts()

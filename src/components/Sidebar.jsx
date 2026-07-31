@@ -5,6 +5,7 @@ import {
   X,
   Layers,
   List,
+  Bell,
   User,
   LogOut,
   Moon,
@@ -84,6 +85,16 @@ export default function Sidebar({
         >
           <List className="w-5 h-5 shrink-0" />
           <span className="sidebar-text whitespace-nowrap">Transactions</span>
+        </NavLink>
+
+        <NavLink
+          to="/reminders"
+          title="Reminder debt"
+          className={linkClass}
+          onClick={onMobileClose}
+        >
+          <Bell className="w-5 h-5 shrink-0" />
+          <span className="sidebar-text whitespace-nowrap">Reminder debt</span>
         </NavLink>
       </nav>
 
