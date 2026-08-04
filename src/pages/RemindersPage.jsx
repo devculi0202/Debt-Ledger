@@ -36,6 +36,7 @@ export default function RemindersPage() {
   const [qr, setQr] = useState(null)
   const [waLoading, setWaLoading] = useState(false)
   const [sendingNow, setSendingNow] = useState(false)
+  const [linkedPhone, setLinkedPhone] = useState(null)
   const apiConfigured = whatsappApi.isWhatsAppApiConfigured()
 
   const loadSettings = useCallback(async () => {
@@ -65,12 +66,14 @@ export default function RemindersPage() {
     if (!apiConfigured) {
       setWaStatus('unconfigured')
       setQr(null)
+      setLinkedPhone(null)
       return
     }
     setWaLoading(true)
     try {
       const statusRes = await whatsappApi.getStatus()
       setWaStatus(statusRes.status || 'disconnected')
+      setLinkedPhone(statusRes.linkedPhone || null)
       if (statusRes.status === 'qr' || statusRes.qr) {
         const qrRes = statusRes.qr
           ? statusRes
@@ -82,6 +85,7 @@ export default function RemindersPage() {
     } catch (err) {
       setWaStatus('error')
       setQr(null)
+      setLinkedPhone(null)
       logger.error('WhatsApp status failed', CTX, err)
     } finally {
       setWaLoading(false)
@@ -242,7 +246,10 @@ export default function RemindersPage() {
           }.`,
         )
       } else if (failed > 0) {
-        toast.error(`Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check worker logs.`)
+        toast.error(
+          result?.lastError ||
+            `Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check phone format (8490…).`,
+        )
       } else {
         toast.warning(
           'Nothing to send — need unpaid debts with due dates linked to your user.',
@@ -273,7 +280,9 @@ export default function RemindersPage() {
     setSendingNow(true)
     try {
       await whatsappApi.sendTestReminder()
-      toast.success('Test message sent — check WhatsApp on that phone.')
+      toast.success(
+        'Test sent. Open WhatsApp on the linked phone — check chats / “Message yourself”.',
+      )
     } catch (err) {
       toast.error(err?.message || 'Test message failed.')
       logger.error('test message failed', CTX, err)
@@ -323,9 +332,17 @@ export default function RemindersPage() {
 
         {apiConfigured && waStatus === 'connected' ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-            <p className="text-sm text-brand-positive font-semibold">
-              Connected — session stays linked after you sign out of Debt Ledger.
-            </p>
+            <div className="space-y-1">
+              <p className="text-sm text-brand-positive font-semibold">
+                Connected — session stays linked after you sign out of Debt Ledger.
+              </p>
+              {linkedPhone ? (
+                <p className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
+                  Linked WhatsApp: +{linkedPhone}. Reminder phone should match this
+                  (or another WhatsApp number with country code).
+                </p>
+              ) : null}
+            </div>
             <NeuButton type="button" onClick={handleDisconnect} disabled={waLoading}>
               <Link2Off className="w-4 h-4" />
               Disconnect WhatsApp
@@ -390,7 +407,7 @@ export default function RemindersPage() {
             <>
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-neu-textMuted">
-                  Phone number (with country code, e.g. 84901234567)
+                  Phone number (country code, no + — e.g. 84901234567)
                 </span>
                 <input
                   className={inputClass}
@@ -399,6 +416,10 @@ export default function RemindersPage() {
                   placeholder="84901234567"
                   inputMode="tel"
                 />
+                <span className="text-xs text-neu-textMuted">
+                  Must be a WhatsApp number. Local 09… is auto-converted to 849…. Prefer the
+                  same number as the linked device above.
+                </span>
               </label>
 
               <label className="block space-y-2">

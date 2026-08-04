@@ -104,13 +104,15 @@ app.post('/reminders/test', requireAuth, async (req, res) => {
       const messages = {
         disconnected: 'WhatsApp is not connected',
         no_settings: 'Save reminder settings first',
-        no_phone: 'Set a phone number in reminder settings',
+        no_phone: 'Set a phone number in reminder settings (or link WhatsApp first)',
         no_admin: 'Worker Supabase admin is not configured',
         no_user: 'Missing user',
+        send_failed: result.error || 'WhatsApp send failed',
       }
       return res.status(400).json({
         error: messages[result.reason] || result.reason || 'Test send failed',
         reason: result.reason,
+        linkedPhone: result.linkedPhone,
       })
     }
     res.json(result)

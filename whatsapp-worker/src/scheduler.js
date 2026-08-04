@@ -100,6 +100,7 @@ export async function runReminderScan({ userId, force = false } = {}) {
   let sent = 0
   let skipped = 0
   let failed = 0
+  let lastError = null
   const skipReasons = {
     disabled: 0,
     no_phone: 0,
@@ -129,7 +130,8 @@ export async function runReminderScan({ userId, force = false } = {}) {
       continue
     }
 
-    if (!settings.phone?.trim()) {
+    // Phone optional: empty → send to the linked WhatsApp account
+    if (!settings.phone?.trim() && !wa.linkedPhone) {
       skipReasons.no_phone += 1
       skipped += 1
       continue
@@ -207,6 +209,7 @@ export async function runReminderScan({ userId, force = false } = {}) {
         logger.info({ debtId: debt.id, remindOn: logDate, force }, 'Reminder sent')
       } catch (err) {
         failed += 1
+        lastError = err?.message || String(err)
         logger.error({ err, debtId: debt.id }, 'Failed to send reminder')
       }
     }
@@ -228,10 +231,11 @@ export async function runReminderScan({ userId, force = false } = {}) {
     force: Boolean(force),
     reason,
     skipReasons,
+    lastError,
   }
 }
 
-/** Send one plain text message to the user's configured reminder phone. */
+/** Send one plain text message to verify WhatsApp delivery. */
 export async function sendTestReminder(userId) {
   if (!admin) {
     return { ok: false, reason: 'no_admin' }
@@ -255,11 +259,32 @@ export async function sendTestReminder(userId) {
   if (!settings) {
     return { ok: false, reason: 'no_settings' }
   }
-  if (!settings.phone?.trim()) {
+
+  // Prefer configured phone; if empty, message the linked WhatsApp account itself
+  const phone = settings.phone?.trim() || ''
+  if (!phone && !wa.linkedPhone) {
     return { ok: false, reason: 'no_phone' }
   }
 
-  const text = `Debt Ledger test: WhatsApp link OK (${new Date().toISOString()}).`
-  await sendTextMessage(settings.phone, text)
-  return { ok: true, phone: settings.phone.replace(/\d(?=\d{4})/g, '*') }
+  const text = `Debt Ledger test: WhatsApp OK at ${new Date().toISOString()}. Check “Message yourself” if this is your linked number.`
+
+  try {
+    const delivery = await sendTextMessage(phone, text)
+    return {
+      ok: true,
+      phone: delivery.digits,
+      jid: delivery.jid,
+      isSelf: delivery.isSelf,
+      messageId: delivery.messageId,
+      linkedPhone: wa.linkedPhone,
+    }
+  } catch (err) {
+    logger.error({ err }, 'Test reminder send failed')
+    return {
+      ok: false,
+      reason: 'send_failed',
+      error: err?.message || String(err),
+      linkedPhone: wa.linkedPhone,
+    }
+  }
 }
