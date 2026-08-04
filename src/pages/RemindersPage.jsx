@@ -164,6 +164,39 @@ export default function RemindersPage() {
     }
   }
 
+  async function handleRelink() {
+    setWaLoading(true)
+    try {
+      await whatsappApi.relink()
+      toast.success('Starting a new WhatsApp link — wait for the QR.')
+      // QR may arrive a second or two after the socket starts
+      for (let i = 0; i < 10; i += 1) {
+        await new Promise((r) => setTimeout(r, 1200))
+        try {
+          const statusRes = await whatsappApi.getStatus()
+          const next = statusRes.status || 'disconnected'
+          setWaStatus(next)
+          if (next === 'qr') {
+            const qrRes = statusRes.qr ? statusRes : await whatsappApi.getQr()
+            setQr(qrRes.qr || null)
+            break
+          }
+          if (next === 'connected') {
+            setQr(null)
+            break
+          }
+          setQr(null)
+        } catch {
+          /* keep polling */
+        }
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Could not start WhatsApp link.')
+    } finally {
+      setWaLoading(false)
+    }
+  }
+
   async function handleSendNow() {
     if (!apiConfigured) {
       toast.warning('WhatsApp API is not configured.')
@@ -272,10 +305,25 @@ export default function RemindersPage() {
         {apiConfigured &&
         (waStatus === 'disconnected' || waStatus === 'unknown') &&
         !qr ? (
-          <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted flex items-center gap-2">
-            {waLoading ? <LoaderCircle className="w-4 h-4 animate-spin" /> : null}
-            Waiting for QR from the WhatsApp worker…
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+            <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted flex items-center gap-2">
+              {waLoading ? <LoaderCircle className="w-4 h-4 animate-spin" /> : null}
+              Disconnected — click Relink to generate a QR code.
+            </p>
+            <NeuButton
+              type="button"
+              variant="primary"
+              onClick={handleRelink}
+              disabled={waLoading}
+            >
+              {waLoading ? (
+                <LoaderCircle className="w-4 h-4 animate-spin" />
+              ) : (
+                <Link2 className="w-4 h-4" />
+              )}
+              Relink WhatsApp
+            </NeuButton>
+          </div>
         ) : null}
 
         {waStatus === 'error' ? (

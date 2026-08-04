@@ -51,5 +51,7 @@ export const getStatus = () => request('/whatsapp/status')
 export const getQr = () => request('/whatsapp/qr')
 export const disconnect = () =>
   request('/whatsapp/disconnect', { method: 'POST', body: '{}' })
+export const relink = () =>
+  request('/whatsapp/relink', { method: 'POST', body: '{}' })
 export const runReminders = () =>
   request('/reminders/run', { method: 'POST', body: '{}' })

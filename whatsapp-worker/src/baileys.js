@@ -16,6 +16,8 @@ let sock = null
 let status = 'disconnected' // disconnected | qr | connected
 let qrPayload = null // { raw, dataUrl }
 let connecting = false
+let intentionalDisconnect = false
+let reconnectTimer = null
 
 export function getWhatsAppState() {
   return {
@@ -41,6 +43,19 @@ function clearQr() {
 
 async function ensureAuthDir() {
   await fs.mkdir(AUTH_DIR, { recursive: true })
+}
+
+async function wipeAuthDir() {
+  await fs.rm(AUTH_DIR, { recursive: true, force: true })
+  await ensureAuthDir()
+}
+
+function scheduleReconnect(delayMs) {
+  if (reconnectTimer) clearTimeout(reconnectTimer)
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null
+    startWhatsApp().catch((err) => logger.error({ err }, 'Reconnect failed'))
+  }, delayMs)
 }
 
 export async function startWhatsApp() {
@@ -84,16 +99,34 @@ export async function startWhatsApp() {
           ? lastDisconnect.error.output?.statusCode
           : lastDisconnect?.error?.output?.statusCode) ?? 0
         const loggedOut = code === DisconnectReason.loggedOut
+        // Bad session / forbidden — wipe auth so the next start can emit a QR
+        const needsFreshAuth =
+          loggedOut ||
+          code === DisconnectReason.badSession ||
+          code === DisconnectReason.forbidden ||
+          code === 401 ||
+          code === 403
+
         status = 'disconnected'
         clearQr()
         sock = null
         connecting = false
-        logger.warn({ code, loggedOut }, 'WhatsApp connection closed')
-        if (!loggedOut) {
-          setTimeout(() => {
-            startWhatsApp().catch((err) => logger.error({ err }, 'Reconnect failed'))
-          }, 3000)
+        logger.warn({ code, loggedOut, needsFreshAuth }, 'WhatsApp connection closed')
+
+        // Relink/disconnect already restarts the socket itself
+        if (intentionalDisconnect) {
+          return
         }
+
+        if (needsFreshAuth) {
+          try {
+            await wipeAuthDir()
+          } catch (err) {
+            logger.error({ err }, 'Failed to clear auth after disconnect')
+          }
+        }
+
+        scheduleReconnect(needsFreshAuth ? 1000 : 3000)
       }
     })
   } finally {
@@ -102,6 +135,12 @@ export async function startWhatsApp() {
 }
 
 export async function disconnectWhatsApp() {
+  intentionalDisconnect = true
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer)
+    reconnectTimer = null
+  }
+
   try {
     if (sock) {
       await sock.logout()
@@ -113,14 +152,15 @@ export async function disconnectWhatsApp() {
   sock = null
   status = 'disconnected'
   clearQr()
+  connecting = false
 
   try {
-    await fs.rm(AUTH_DIR, { recursive: true, force: true })
-    await ensureAuthDir()
+    await wipeAuthDir()
   } catch (err) {
     logger.error({ err }, 'Failed to clear auth dir')
   }
 
+  intentionalDisconnect = false
   await startWhatsApp()
   return getWhatsAppState()
 }

@@ -69,6 +69,17 @@ app.post('/whatsapp/disconnect', requireAuth, async (_req, res) => {
   }
 })
 
+/** Wipe session (if any) and start a fresh Baileys socket so a QR can appear. */
+app.post('/whatsapp/relink', requireAuth, async (_req, res) => {
+  try {
+    const state = await disconnectWhatsApp()
+    res.json(state)
+  } catch (err) {
+    logger.error({ err }, 'relink failed')
+    res.status(500).json({ error: err?.message || 'Relink failed' })
+  }
+})
+
 app.post('/reminders/run', requireAuth, async (req, res) => {
   try {
     const userId = req.auth?.type === 'user' ? req.auth.user.id : undefined
