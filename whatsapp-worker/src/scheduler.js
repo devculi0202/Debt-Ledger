@@ -54,7 +54,7 @@ function isUnpaid(paid) {
   return paid !== true && paid !== 'true'
 }
 
-export async function runReminderScan() {
+export async function runReminderScan({ userId } = {}) {
   if (!admin) {
     logger.warn('Skipping reminder scan: Supabase admin client not configured')
     return { scanned: 0, sent: 0, skipped: 0 }
@@ -66,10 +66,12 @@ export async function runReminderScan() {
     return { scanned: 0, sent: 0, skipped: 0, reason: 'disconnected' }
   }
 
-  const { data: settingsRows, error: settingsError } = await admin
-    .from('reminder_settings')
-    .select('*')
-    .eq('enabled', true)
+  let settingsQuery = admin.from('reminder_settings').select('*').eq('enabled', true)
+  if (userId) {
+    settingsQuery = settingsQuery.eq('user_id', userId)
+  }
+
+  const { data: settingsRows, error: settingsError } = await settingsQuery
 
   if (settingsError) {
     logger.error({ err: settingsError }, 'Failed to load reminder_settings')

@@ -6,6 +6,7 @@ import {
   LoaderCircle,
   RefreshCw,
   Save,
+  Send,
 } from 'lucide-react'
 import NeuCard from '../components/ui/NeuCard'
 import NeuButton from '../components/ui/NeuButton'
@@ -34,6 +35,7 @@ export default function RemindersPage() {
   const [waStatus, setWaStatus] = useState('unknown')
   const [qr, setQr] = useState(null)
   const [waLoading, setWaLoading] = useState(false)
+  const [sendingNow, setSendingNow] = useState(false)
   const apiConfigured = whatsappApi.isWhatsAppApiConfigured()
 
   const loadSettings = useCallback(async () => {
@@ -162,6 +164,47 @@ export default function RemindersPage() {
     }
   }
 
+  async function handleSendNow() {
+    if (!apiConfigured) {
+      toast.warning('WhatsApp API is not configured.')
+      return
+    }
+    if (waStatus !== 'connected') {
+      toast.warning('Link WhatsApp before sending reminders.')
+      return
+    }
+    if (!form.enabled) {
+      toast.warning('Enable reminders and save settings first.')
+      return
+    }
+    if (!form.phone.trim()) {
+      toast.warning('Enter a phone number and save settings first.')
+      return
+    }
+
+    setSendingNow(true)
+    try {
+      const result = await whatsappApi.runReminders()
+      if (result?.reason === 'disconnected') {
+        toast.warning('WhatsApp is not connected on the worker.')
+        return
+      }
+      const sent = result?.sent ?? 0
+      if (sent > 0) {
+        toast.success(`Sent ${sent} reminder${sent === 1 ? '' : 's'} to WhatsApp.`)
+      } else {
+        toast.success(
+          'Scan finished — no new reminders due today (or already sent).',
+        )
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Failed to send reminders.')
+      logger.error('send now failed', CTX, err)
+    } finally {
+      setSendingNow(false)
+    }
+  }
+
   const inputClass =
     'w-full px-4 py-3 rounded-neu-md bg-neu-bg dark:bg-darkNeu-bg shadow-neu-inner dark:shadow-neu-dark-inner outline-none text-neu-textMain dark:text-darkNeu-textMain'
 
@@ -173,8 +216,8 @@ export default function RemindersPage() {
           Reminder debt
         </h2>
         <p className="mt-2 text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-2xl">
-          Link your WhatsApp once, then configure a self-reminder. A background
-          job scans unpaid transactions and messages you before each due date.
+          Link your WhatsApp once, then configure a self-reminder. Use Send now
+          to message immediately, or let the background job run on its schedule.
         </p>
       </div>
 
@@ -319,14 +362,37 @@ export default function RemindersPage() {
                 <span className="text-sm font-medium">Enable reminders</span>
               </label>
 
-              <NeuButton type="submit" variant="primary" disabled={saving}>
-                {saving ? (
-                  <LoaderCircle className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Save className="w-4 h-4" />
-                )}
-                Save settings
-              </NeuButton>
+              <div className="flex flex-wrap gap-3">
+                <NeuButton type="submit" variant="primary" disabled={saving}>
+                  {saving ? (
+                    <LoaderCircle className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  Save settings
+                </NeuButton>
+                <NeuButton
+                  type="button"
+                  onClick={handleSendNow}
+                  disabled={
+                    sendingNow ||
+                    !apiConfigured ||
+                    waStatus !== 'connected' ||
+                    loadingSettings
+                  }
+                >
+                  {sendingNow ? (
+                    <LoaderCircle className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  Send now
+                </NeuButton>
+              </div>
+              <p className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
+                Send now checks unpaid debts due for reminder today and messages
+                your phone right away — no need to wait for the scheduler.
+              </p>
             </>
           )}
         </form>

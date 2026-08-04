@@ -69,9 +69,10 @@ app.post('/whatsapp/disconnect', requireAuth, async (_req, res) => {
   }
 })
 
-app.post('/reminders/run', requireAuth, async (_req, res) => {
+app.post('/reminders/run', requireAuth, async (req, res) => {
   try {
-    const result = await runReminderScan()
+    const userId = req.auth?.type === 'user' ? req.auth.user.id : undefined
+    const result = await runReminderScan({ userId })
     res.json(result)
   } catch (err) {
     logger.error({ err }, 'manual reminder run failed')
