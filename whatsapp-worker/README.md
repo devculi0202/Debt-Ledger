@@ -38,7 +38,8 @@ All routes below (except `/health`) require `Authorization: Bearer <supabase_acc
 | GET | `/whatsapp/qr` | Current QR as data URL when status is `qr` |
 | POST | `/whatsapp/disconnect` | Logout session (forces new QR) |
 | POST | `/whatsapp/relink` | Wipe session and start fresh (forces new QR) |
-| POST | `/reminders/run` | Manually trigger the scan job |
+| POST | `/reminders/run` | Trigger scan (`{ "force": true }` sends all unpaid debts with due dates) |
+| POST | `/reminders/test` | Send a one-line test message to the user's reminder phone |
 
 ## Notes
 

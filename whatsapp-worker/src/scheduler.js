@@ -38,7 +38,7 @@ function formatAmount(amount) {
   }
 }
 
-function renderTemplate(template, debt) {
+export function renderTemplate(template, debt) {
   const raw =
     template ||
     'Reminder: {person} — {amount} due on {due_date}.'
@@ -54,21 +54,39 @@ function isUnpaid(paid) {
   return paid !== true && paid !== 'true'
 }
 
-export async function runReminderScan({ userId } = {}) {
+/**
+ * @param {{ userId?: string, force?: boolean }} [opts]
+ * force=true: send all unpaid debts with a due date (ignores days_before window + prior sends for today)
+ */
+export async function runReminderScan({ userId, force = false } = {}) {
   if (!admin) {
     logger.warn('Skipping reminder scan: Supabase admin client not configured')
-    return { scanned: 0, sent: 0, skipped: 0 }
+    return {
+      scanned: 0,
+      sent: 0,
+      skipped: 0,
+      failed: 0,
+      reason: 'no_admin',
+    }
   }
 
   const wa = getWhatsAppState()
   if (!wa.connected) {
     logger.info('Skipping reminder scan: WhatsApp not connected')
-    return { scanned: 0, sent: 0, skipped: 0, reason: 'disconnected' }
+    return {
+      scanned: 0,
+      sent: 0,
+      skipped: 0,
+      failed: 0,
+      reason: 'disconnected',
+    }
   }
 
-  let settingsQuery = admin.from('reminder_settings').select('*').eq('enabled', true)
+  let settingsQuery = admin.from('reminder_settings').select('*')
   if (userId) {
     settingsQuery = settingsQuery.eq('user_id', userId)
+  } else {
+    settingsQuery = settingsQuery.eq('enabled', true)
   }
 
   const { data: settingsRows, error: settingsError } = await settingsQuery
@@ -81,9 +99,38 @@ export async function runReminderScan({ userId } = {}) {
   let scanned = 0
   let sent = 0
   let skipped = 0
+  let failed = 0
+  const skipReasons = {
+    disabled: 0,
+    no_phone: 0,
+    paid: 0,
+    not_due: 0,
+    already_sent: 0,
+    no_debts: 0,
+  }
 
-  for (const settings of settingsRows || []) {
+  const rows = settingsRows || []
+  if (rows.length === 0) {
+    return {
+      scanned: 0,
+      sent: 0,
+      skipped: 0,
+      failed: 0,
+      reason: 'no_settings',
+      force: Boolean(force),
+      skipReasons,
+    }
+  }
+
+  for (const settings of rows) {
+    if (!force && !settings.enabled) {
+      skipReasons.disabled += 1
+      skipped += 1
+      continue
+    }
+
     if (!settings.phone?.trim()) {
+      skipReasons.no_phone += 1
       skipped += 1
       continue
     }
@@ -99,53 +146,120 @@ export async function runReminderScan({ userId } = {}) {
 
     if (debtsError) {
       logger.error({ err: debtsError, userId: settings.user_id }, 'Failed to load debts')
+      failed += 1
       continue
+    }
+
+    if (!debts?.length) {
+      skipReasons.no_debts += 1
     }
 
     for (const debt of debts || []) {
       scanned += 1
       if (!isUnpaid(debt.paid)) {
+        skipReasons.paid += 1
         skipped += 1
         continue
       }
 
       const remindOn = subtractDays(debt.due_date, daysBefore)
-      if (!remindOn || remindOn !== today) {
-        skipped += 1
-        continue
+      if (!force) {
+        if (!remindOn || remindOn !== today) {
+          skipReasons.not_due += 1
+          skipped += 1
+          continue
+        }
+
+        const { data: existing } = await admin
+          .from('reminder_sends')
+          .select('id')
+          .eq('debt_id', debt.id)
+          .eq('remind_on_date', remindOn)
+          .maybeSingle()
+
+        if (existing) {
+          skipReasons.already_sent += 1
+          skipped += 1
+          continue
+        }
       }
 
-      const { data: existing } = await admin
-        .from('reminder_sends')
-        .select('id')
-        .eq('debt_id', debt.id)
-        .eq('remind_on_date', remindOn)
-        .maybeSingle()
-
-      if (existing) {
-        skipped += 1
-        continue
-      }
-
+      const logDate = force ? today : remindOn
       const text = renderTemplate(settings.message_template, debt)
 
       try {
         await sendTextMessage(settings.phone, text)
-        const { error: insertError } = await admin.from('reminder_sends').insert({
-          user_id: settings.user_id,
-          debt_id: debt.id,
-          remind_on_date: remindOn,
-        })
+        const { error: insertError } = await admin.from('reminder_sends').upsert(
+          {
+            user_id: settings.user_id,
+            debt_id: debt.id,
+            remind_on_date: logDate,
+          },
+          { onConflict: 'debt_id,remind_on_date' },
+        )
         if (insertError) {
-          logger.error({ err: insertError, debtId: debt.id }, 'Sent but failed to log reminder_sends')
+          logger.error(
+            { err: insertError, debtId: debt.id },
+            'Sent but failed to log reminder_sends',
+          )
         }
         sent += 1
-        logger.info({ debtId: debt.id, remindOn }, 'Reminder sent')
+        logger.info({ debtId: debt.id, remindOn: logDate, force }, 'Reminder sent')
       } catch (err) {
+        failed += 1
         logger.error({ err, debtId: debt.id }, 'Failed to send reminder')
       }
     }
   }
 
-  return { scanned, sent, skipped }
+  let reason
+  if (sent === 0 && failed > 0) reason = 'send_failed'
+  else if (sent === 0 && skipReasons.no_phone) reason = 'no_phone'
+  else if (sent === 0 && skipReasons.no_debts && scanned === 0) reason = 'no_debts'
+  else if (sent === 0 && skipReasons.not_due) reason = 'not_due'
+  else if (sent === 0 && skipReasons.already_sent) reason = 'already_sent'
+  else if (sent === 0) reason = 'nothing_to_send'
+
+  return {
+    scanned,
+    sent,
+    skipped,
+    failed,
+    force: Boolean(force),
+    reason,
+    skipReasons,
+  }
+}
+
+/** Send one plain text message to the user's configured reminder phone. */
+export async function sendTestReminder(userId) {
+  if (!admin) {
+    return { ok: false, reason: 'no_admin' }
+  }
+  if (!userId) {
+    return { ok: false, reason: 'no_user' }
+  }
+
+  const wa = getWhatsAppState()
+  if (!wa.connected) {
+    return { ok: false, reason: 'disconnected' }
+  }
+
+  const { data: settings, error } = await admin
+    .from('reminder_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  if (!settings) {
+    return { ok: false, reason: 'no_settings' }
+  }
+  if (!settings.phone?.trim()) {
+    return { ok: false, reason: 'no_phone' }
+  }
+
+  const text = `Debt Ledger test: WhatsApp link OK (${new Date().toISOString()}).`
+  await sendTextMessage(settings.phone, text)
+  return { ok: true, phone: settings.phone.replace(/\d(?=\d{4})/g, '*') }
 }

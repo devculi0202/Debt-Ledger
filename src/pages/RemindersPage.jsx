@@ -206,8 +206,63 @@ export default function RemindersPage() {
       toast.warning('Link WhatsApp before sending reminders.')
       return
     }
-    if (!form.enabled) {
-      toast.warning('Enable reminders and save settings first.')
+    if (!form.phone.trim()) {
+      toast.warning('Enter a phone number and save settings first.')
+      return
+    }
+
+    setSendingNow(true)
+    try {
+      // force: send all unpaid debts with due dates now (do not wait for remind day)
+      const result = await whatsappApi.runReminders({ force: true })
+      if (result?.reason === 'disconnected') {
+        toast.warning('WhatsApp is not connected on the worker.')
+        return
+      }
+      if (result?.reason === 'no_settings') {
+        toast.warning('Save reminder settings first.')
+        return
+      }
+      if (result?.reason === 'no_phone') {
+        toast.warning('Set a phone number with country code (e.g. 8490…).')
+        return
+      }
+      if (result?.reason === 'no_debts') {
+        toast.warning(
+          'No unpaid debts with a due date found for your account (check user_id on debts).',
+        )
+        return
+      }
+      const sent = result?.sent ?? 0
+      const failed = result?.failed ?? 0
+      if (sent > 0) {
+        toast.success(
+          `Sent ${sent} reminder${sent === 1 ? '' : 's'} to WhatsApp${
+            failed ? ` (${failed} failed)` : ''
+          }.`,
+        )
+      } else if (failed > 0) {
+        toast.error(`Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check worker logs.`)
+      } else {
+        toast.warning(
+          'Nothing to send — need unpaid debts with due dates linked to your user.',
+        )
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Failed to send reminders.')
+      logger.error('send now failed', CTX, err)
+    } finally {
+      setSendingNow(false)
+    }
+  }
+
+  async function handleTestMessage() {
+    if (!apiConfigured) {
+      toast.warning('WhatsApp API is not configured.')
+      return
+    }
+    if (waStatus !== 'connected') {
+      toast.warning('Link WhatsApp before sending a test.')
       return
     }
     if (!form.phone.trim()) {
@@ -217,22 +272,11 @@ export default function RemindersPage() {
 
     setSendingNow(true)
     try {
-      const result = await whatsappApi.runReminders()
-      if (result?.reason === 'disconnected') {
-        toast.warning('WhatsApp is not connected on the worker.')
-        return
-      }
-      const sent = result?.sent ?? 0
-      if (sent > 0) {
-        toast.success(`Sent ${sent} reminder${sent === 1 ? '' : 's'} to WhatsApp.`)
-      } else {
-        toast.success(
-          'Scan finished — no new reminders due today (or already sent).',
-        )
-      }
+      await whatsappApi.sendTestReminder()
+      toast.success('Test message sent — check WhatsApp on that phone.')
     } catch (err) {
-      toast.error(err?.message || 'Failed to send reminders.')
-      logger.error('send now failed', CTX, err)
+      toast.error(err?.message || 'Test message failed.')
+      logger.error('test message failed', CTX, err)
     } finally {
       setSendingNow(false)
     }
@@ -436,10 +480,23 @@ export default function RemindersPage() {
                   )}
                   Send now
                 </NeuButton>
+                <NeuButton
+                  type="button"
+                  onClick={handleTestMessage}
+                  disabled={
+                    sendingNow ||
+                    !apiConfigured ||
+                    waStatus !== 'connected' ||
+                    loadingSettings
+                  }
+                >
+                  Test message
+                </NeuButton>
               </div>
               <p className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
-                Send now checks unpaid debts due for reminder today and messages
-                your phone right away — no need to wait for the scheduler.
+                Send now messages all unpaid debts that have a due date (does not
+                wait for the remind day). Test message only checks WhatsApp delivery.
+                Phone must include country code (e.g. 84901234567).
               </p>
             </>
           )}

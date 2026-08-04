@@ -53,5 +53,10 @@ export const disconnect = () =>
   request('/whatsapp/disconnect', { method: 'POST', body: '{}' })
 export const relink = () =>
   request('/whatsapp/relink', { method: 'POST', body: '{}' })
-export const runReminders = () =>
-  request('/reminders/run', { method: 'POST', body: '{}' })
+export const runReminders = ({ force = false } = {}) =>
+  request('/reminders/run', {
+    method: 'POST',
+    body: JSON.stringify({ force }),
+  })
+export const sendTestReminder = () =>
+  request('/reminders/test', { method: 'POST', body: '{}' })

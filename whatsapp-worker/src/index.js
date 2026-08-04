@@ -7,7 +7,7 @@ import {
   logger,
 } from './baileys.js'
 import { verifyUserJwt } from './supabase.js'
-import { runReminderScan } from './scheduler.js'
+import { runReminderScan, sendTestReminder } from './scheduler.js'
 
 const PORT = Number(process.env.PORT || 8787)
 const CRON_MS = Number(process.env.REMINDER_CRON_MS || 30 * 60 * 1000)
@@ -83,11 +83,40 @@ app.post('/whatsapp/relink', requireAuth, async (_req, res) => {
 app.post('/reminders/run', requireAuth, async (req, res) => {
   try {
     const userId = req.auth?.type === 'user' ? req.auth.user.id : undefined
-    const result = await runReminderScan({ userId })
+    const force = Boolean(req.body?.force)
+    const result = await runReminderScan({ userId, force })
     res.json(result)
   } catch (err) {
     logger.error({ err }, 'manual reminder run failed')
     res.status(500).json({ error: err?.message || 'Reminder run failed' })
+  }
+})
+
+app.post('/reminders/test', requireAuth, async (req, res) => {
+  try {
+    if (req.auth?.type !== 'user') {
+      return res.status(400).json({
+        error: 'Test send requires a signed-in user token (not API secret alone).',
+      })
+    }
+    const result = await sendTestReminder(req.auth.user.id)
+    if (!result.ok) {
+      const messages = {
+        disconnected: 'WhatsApp is not connected',
+        no_settings: 'Save reminder settings first',
+        no_phone: 'Set a phone number in reminder settings',
+        no_admin: 'Worker Supabase admin is not configured',
+        no_user: 'Missing user',
+      }
+      return res.status(400).json({
+        error: messages[result.reason] || result.reason || 'Test send failed',
+        reason: result.reason,
+      })
+    }
+    res.json(result)
+  } catch (err) {
+    logger.error({ err }, 'test reminder failed')
+    res.status(500).json({ error: err?.message || 'Test send failed' })
   }
 })
 
