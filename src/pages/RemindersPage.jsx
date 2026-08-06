@@ -99,7 +99,7 @@ export default function RemindersPage() {
       }
       if (result?.reason === 'no_debts') {
         toast.warning(
-          'No unpaid debts with a due date found for your account (check user_id on debts).',
+          'No unpaid transactions with a due date found. Add a due date on Transactions first.',
         )
         return
       }
@@ -114,11 +114,11 @@ export default function RemindersPage() {
       } else if (failed > 0) {
         toast.error(
           result?.lastError ||
-            `Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check phone format (8490…).`,
+            `Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check the phone number (e.g. 8490…).`,
         )
       } else {
         toast.warning(
-          'Nothing to send — need unpaid debts with due dates linked to your user.',
+          'Nothing to send — add unpaid transactions that have a due date.',
         )
       }
     } catch (err) {
@@ -162,11 +162,12 @@ export default function RemindersPage() {
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-3 text-neu-textMain dark:text-darkNeu-textMain">
           <Bell className="w-7 h-7" />
-          Reminder debt
+          Reminders
         </h2>
         <p className="mt-2 text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-2xl">
-          Link your WhatsApp once, then configure a self-reminder. Use Send now
-          to message immediately, or let the background job run on its schedule.
+          Link WhatsApp once, then get self-reminders for unpaid transactions
+          with a due date. Use Send now for an immediate message, or enable
+          scheduled reminders below.
         </p>
       </div>
 
@@ -190,8 +191,8 @@ export default function RemindersPage() {
 
         {!whatsapp.apiConfigured ? (
           <p className="text-sm text-brand-negative">
-            Set <code className="font-mono">VITE_WHATSAPP_API_URL</code> to your
-            Railway worker URL, then restart the Vite app.
+            WhatsApp reminders are not set up for this deployment. Ask the app
+            admin to configure the WhatsApp worker URL.
           </p>
         ) : null}
 
@@ -260,7 +261,8 @@ export default function RemindersPage() {
 
         {whatsapp.status === 'error' ? (
           <p className="text-sm text-brand-negative">
-            Could not reach the WhatsApp worker. Check Railway logs and CORS.
+            Could not reach the WhatsApp service. Try again later, or check that
+            the worker is running.
           </p>
         ) : null}
       </NeuCard>

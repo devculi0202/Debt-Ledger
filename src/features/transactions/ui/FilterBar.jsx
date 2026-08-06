@@ -15,8 +15,12 @@ export default function FilterBar({
     <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 mb-2 gap-6 shrink-0">
       <div className="space-y-2">
         <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
-          Transactions Ledger
+          Transactions
         </h3>
+        <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-xl">
+          Each payment or IOU. Link to a debt account when it belongs to a
+          larger loan; leave unlinked for one-off debts.
+        </p>
         {filters.accountId ? (
           <div className="flex items-center gap-3 text-xs font-medium text-neu-textMuted dark:text-darkNeu-textMuted">
             <span>

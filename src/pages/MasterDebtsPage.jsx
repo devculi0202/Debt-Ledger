@@ -29,7 +29,7 @@ export default function MasterDebtsPage() {
   async function handleDelete(id) {
     const confirmed = await confirm(
       'Delete Account',
-      'Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.',
+      'Delete this debt account? Linked transactions will not be deleted, but they will become unlinked.',
     )
     if (!confirmed) return
     await rawDelete(id)

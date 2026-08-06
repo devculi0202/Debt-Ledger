@@ -28,9 +28,14 @@ export default function TransactionModal({
   useEffect(() => {
     if (!open) return
     if (mode === 'edit' && initialData) {
+      const accountId = initialData.account_id || 'none'
+      const account =
+        accountId !== 'none'
+          ? masterDebts.find((a) => String(a.id) === String(accountId))
+          : null
       setForm({
-        type: initialData.type || 'owe',
-        account_id: initialData.account_id || 'none',
+        type: account?.type || initialData.type || 'owe',
+        account_id: accountId,
         person: initialData.person || '',
         amount: initialData.amount ?? '',
         transaction_date: initialData.transaction_date || '',
@@ -43,15 +48,37 @@ export default function TransactionModal({
         transaction_date: new Date().toISOString().split('T')[0],
       })
     }
-  }, [open, mode, initialData])
+  }, [open, mode, initialData, masterDebts])
 
   if (!open) return null
 
   const isEdit = mode === 'edit'
 
   const handleChange = (field) => (e) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
+    const value = e.target.value
+    setForm((prev) => {
+      if (field !== 'account_id') {
+        return { ...prev, [field]: value }
+      }
+      if (value === 'none') {
+        return { ...prev, account_id: value }
+      }
+      const account = masterDebts.find((a) => String(a.id) === String(value))
+      return {
+        ...prev,
+        account_id: value,
+        type: account?.type || prev.type,
+        person:
+          prev.person.trim() || account?.creditor?.trim() || prev.person,
+      }
+    })
   }
+
+  const linkedAccount =
+    form.account_id !== 'none'
+      ? masterDebts.find((a) => String(a.id) === String(form.account_id))
+      : null
+  const typeLocked = Boolean(linkedAccount)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -63,14 +90,18 @@ export default function TransactionModal({
 
     setSubmitting(true)
     try {
+      const accountId = form.account_id === 'none' ? null : form.account_id
+      const account = accountId
+        ? masterDebts.find((a) => String(a.id) === String(accountId))
+        : null
       await onSubmit({
-        type: form.type,
+        type: account?.type || form.type,
         person: form.person.trim(),
         amount: amt,
         transaction_date: form.transaction_date,
         due_date: form.due_date || null,
         notes: form.notes.trim(),
-        account_id: form.account_id === 'none' ? null : form.account_id,
+        account_id: accountId,
       })
     } finally {
       setSubmitting(false)
@@ -111,23 +142,29 @@ export default function TransactionModal({
             <select
               value={form.type}
               onChange={handleChange('type')}
-              className={`${inputClass} appearance-none`}
+              disabled={typeLocked}
+              className={`${inputClass} appearance-none disabled:opacity-70 disabled:cursor-not-allowed`}
             >
               <option value="owe">I Owe (-)</option>
               <option value="owed">Owed to Me (+)</option>
             </select>
+            {typeLocked ? (
+              <p className="text-xs text-neu-textMuted mt-1.5 pl-1">
+                Matches the linked debt account. Unlink to change type.
+              </p>
+            ) : null}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-primary dark:text-darkNeu-textMain mb-2 pl-1 flex items-center gap-1">
-              <Link2 className="w-3 h-3" /> Link to Account
+              <Link2 className="w-3 h-3" /> Link to debt account
             </label>
             <select
               value={form.account_id}
               onChange={handleChange('account_id')}
               className={`${inputClass} text-xs font-medium appearance-none`}
             >
-              <option value="none">-- General Transaction (Unlinked) --</option>
+              <option value="none">— Standalone (not linked) —</option>
               {masterDebts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.type === 'owe' ? '💳' : '💰'} {account.name} (
@@ -135,18 +172,22 @@ export default function TransactionModal({
                 </option>
               ))}
             </select>
+            <p className="text-xs text-neu-textMuted mt-1.5 pl-1">
+              Optional. Link payments to an account so they reduce its remaining
+              balance once settled.
+            </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Entity
+              Person
             </label>
             <input
               type="text"
               required
               value={form.person}
               onChange={handleChange('person')}
-              placeholder="e.g., Alice"
+              placeholder="e.g. Alice"
               className={inputClass}
             />
           </div>

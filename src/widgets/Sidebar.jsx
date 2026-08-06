@@ -74,7 +74,7 @@ export default function Sidebar({
           onClick={onMobileClose}
         >
           <Layers className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Master Debts</span>
+          <span className="sidebar-text whitespace-nowrap">Debt Accounts</span>
         </NavLink>
 
         <NavLink
@@ -89,12 +89,12 @@ export default function Sidebar({
 
         <NavLink
           to="/reminders"
-          title="Reminder Debt"
+          title="Reminders"
           className={linkClass}
           onClick={onMobileClose}
         >
           <Bell className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Reminder Debt</span>
+          <span className="sidebar-text whitespace-nowrap">Reminders</span>
         </NavLink>
       </nav>
 

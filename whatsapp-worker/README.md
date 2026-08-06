@@ -18,7 +18,7 @@ npm start --prefix whatsapp-worker
 # or: npm run dev --prefix whatsapp-worker  (watch mode)
 ```
 
-Point the web app at the worker with `VITE_WHATSAPP_API_URL=http://localhost:8787`, then open **Reminder debt** and scan the QR (WhatsApp → Linked devices).
+Point the web app at the worker with `VITE_WHATSAPP_API_URL=http://localhost:8787`, then open **Reminders** and scan the QR (WhatsApp → Linked devices).
 
 ## Railway setup
 
@@ -42,7 +42,7 @@ CORS_ORIGIN=https://your-app.example,http://localhost:5173
 LOG_LEVEL=info
 ```
 
-5. Deploy. Open the Debt Ledger **Reminder debt** page and scan the QR once.
+5. Deploy. Open the Debt Ledger **Reminders** page and scan the QR once.
 
 > If you must keep Railway Root Directory = `whatsapp-worker`, copy `packages/domain` next to this package (or change the `file:` dependency) so `@debt-ledger/domain` still resolves.
 

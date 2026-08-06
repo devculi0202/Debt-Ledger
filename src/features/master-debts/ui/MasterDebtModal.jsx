@@ -167,13 +167,13 @@ export default function MasterDebtModal({
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              {isEdit ? 'Entity/Creditor' : 'Creditor (Optional)'}
+              Person (optional)
             </label>
             <input
               type="text"
               value={form.creditor}
               onChange={handleChange('creditor')}
-              placeholder="e.g. FE Credit"
+              placeholder="e.g. FE Credit, Alice"
               className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-sm placeholder:text-neu-textMuted/50 border-none"
             />
           </div>

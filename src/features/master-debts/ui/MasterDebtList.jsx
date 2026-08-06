@@ -60,10 +60,11 @@ export default function MasterDebtList({
             <Plus className="w-5 h-5" />
           </div>
           <span className="font-bold text-lg text-neu-textMain dark:text-darkNeu-textMain">
-            Create First Account
+            Create your first debt account
           </span>
           <span className="text-sm mt-2 text-center max-w-xs">
-            Group multiple payments into one tracking system.
+            Use an account for a loan or ongoing debt. Log each payment under
+            Transactions and link it here.
           </span>
         </button>
       ) : (
@@ -143,10 +144,10 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
         <div className="w-full xl:w-2/5">
           <div className="flex justify-between text-xs font-bold mb-3 tracking-wide">
             <span className="text-brand-positive drop-shadow-sm">
-              Paid: {formatVND(amountPaid)}
+              Settled: {formatVND(amountPaid)}
             </span>
             <span className="text-brand-negative drop-shadow-sm">
-              Remain: {formatVND(remaining)}
+              Remaining: {formatVND(remaining)}
             </span>
           </div>
           <div className="w-full bg-neu-surface dark:bg-darkNeu-surface rounded-full h-3 shadow-neu-inner dark:shadow-neu-dark-inner overflow-hidden p-[2px]">
@@ -155,6 +156,10 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
               style={{ width: `${progressPercent}%` }}
             />
           </div>
+          <p className="text-[11px] text-neu-textMuted mt-2">
+            Progress counts settled linked payments only. Mark a transaction
+            settled for it to reduce remaining.
+          </p>
           <div className="mt-4 flex justify-between items-center">
             <div className="flex gap-4">
               <NeuIconButton
@@ -175,9 +180,9 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
                 {progressPercent.toFixed(1)}%
               </span>
               <p className="text-[10px] text-neu-textMuted mt-0.5 uppercase tracking-wider">
-                {linked.length} logs /{' '}
+                {linked.length} linked /{' '}
                 <span className="text-brand-positive">
-                  {settled.length} done
+                  {settled.length} settled
                 </span>
               </p>
             </div>
@@ -200,8 +205,9 @@ function Header({ onOpenCreate }) {
         <h2 className="text-3xl font-bold text-neu-textMain dark:text-darkNeu-textMain tracking-tight">
           Debt Accounts
         </h2>
-        <p className="text-sm text-neu-textMuted mt-2 font-medium">
-          Manage your structured loan plans.
+        <p className="text-sm text-neu-textMuted mt-2 font-medium max-w-xl">
+          Long-term loans or debts with a principal. Log each payment under
+          Transactions and link it to an account to track progress.
         </p>
       </div>
       <NeuButton onClick={onOpenCreate} className="w-full sm:w-auto justify-center py-3.5 px-6 gap-3">

@@ -11,10 +11,10 @@ Built with React and Supabase. Amounts are shown in **VNĐ**.
 | Area | What you can do |
 | --- | --- |
 | **Auth** | Sign in with GitHub (Supabase Auth) |
-| **Master Debts** | Create accounts with name, type (I Owe / Owed to Me), principal, and creditor |
-| **Transactions** | Log entries with person, amount, dates, notes, and optional link to a master account |
+| **Debt Accounts** | Create accounts with name, type (I Owe / Owed to Me), principal, and person |
+| **Transactions** | Log entries with person, amount, dates, notes, and optional link to a debt account |
 | **Voice debt** | Speak or type a debt; Groq extracts structured fields via the serverless API |
-| **Reminder debt** | Link WhatsApp (QR), set phone / message / days-before-due; Railway worker sends self-reminders |
+| **Reminders** | Link WhatsApp (QR), set phone / message / days-before-due; Railway worker sends self-reminders |
 | **Summary** | See net position, receivables, and liabilities at a glance |
 | **Filters** | Filter by month, status (active / settled), account, or search text |
 | **Actions** | Edit, delete, or mark a transaction as settled |
@@ -134,7 +134,7 @@ npm install --prefix whatsapp-worker
 npm start --prefix whatsapp-worker
 ```
 
-Then open **Reminder debt** in the sidebar, scan the QR once (WhatsApp → Linked devices). Signing out of Debt Ledger does **not** unlink WhatsApp; use **Disconnect WhatsApp** for that.
+Then open **Reminders** in the sidebar, scan the QR once (WhatsApp → Linked devices). Signing out of Debt Ledger does **not** unlink WhatsApp; use **Disconnect WhatsApp** for that.
 
 **Caveats:** Railway Free is trial-oriented; always-on usage may cost a few dollars/month after credits. Baileys is unofficial — keep send volume low.
 
@@ -157,11 +157,11 @@ Then open **Reminder debt** in the sidebar, scan the QR once (WhatsApp → Linke
 | Path | Access | Page |
 | --- | --- | --- |
 | `/login` | Public | GitHub sign-in |
-| `/master-debts` | Protected | Master debt accounts |
+| `/master-debts` | Protected | Debt accounts |
 | `/transactions` | Protected | Transaction ledger |
 | `/reminders` | Protected | WhatsApp reminder settings + QR |
 
-Unauthenticated users are redirected to `/login`. After sign-in, you land on **Master Debts**.
+Unauthenticated users are redirected to `/login`. After sign-in, you land on **Debt Accounts**.
 
 ---
 

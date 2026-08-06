@@ -27,8 +27,8 @@ export default function TransactionTable({
       <thead>
         <tr className="text-neu-textMuted text-[11px] uppercase tracking-widest font-bold">
           <th className="px-4 py-4 w-36">Status / Date</th>
-          <th className="px-4 py-4">Entity</th>
-          <th className="px-4 py-4">Link to Account</th>
+          <th className="px-4 py-4">Person</th>
+          <th className="px-4 py-4">Debt Account</th>
           <th className="px-4 py-4">Details</th>
           <th className="px-4 py-4 text-right">Amount (VNĐ)</th>
           <th className="px-4 py-4 text-center">Actions</th>
