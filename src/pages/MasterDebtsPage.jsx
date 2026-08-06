@@ -1,11 +1,17 @@
-import { useMasterDebtsData, useTransactionsData } from '../contexts/DataContext'
-import MasterDebtList from '../components/MasterDebtList'
-import MasterDebtModal from '../components/modals/MasterDebtModal'
-import ConfirmDialog from '../components/ui/ConfirmDialog'
-import useConfirm from '../hooks/useConfirm'
-import { useToast } from '../components/ui/Toast'
+import { useNavigate } from 'react-router-dom'
+import useMasterDebts from '@/features/master-debts/hooks/useMasterDebts'
+import { useTransactionsList } from '@/features/transactions/hooks/useTransactionsQuery'
+import { useSessionData } from '@/app/providers/DataProvider'
+import MasterDebtList from '@/features/master-debts/ui/MasterDebtList'
+import MasterDebtModal from '@/features/master-debts/ui/MasterDebtModal'
+import ConfirmDialog from '@/shared/ui/ConfirmDialog'
+import useConfirm from '@/shared/hooks/useConfirm'
+import { useToast } from '@/shared/ui/Toast'
+import { viewLedgerPath } from '@/entities/transaction/transactionFilters'
 
 export default function MasterDebtsPage() {
+  const navigate = useNavigate()
+  const session = useSessionData()
   const {
     masterDebts,
     loading,
@@ -15,9 +21,8 @@ export default function MasterDebtsPage() {
     closeModal,
     handleSubmit,
     handleDelete: rawDelete,
-    handleViewLedger,
-  } = useMasterDebtsData()
-  const { debts } = useTransactionsData()
+  } = useMasterDebts()
+  const { debts } = useTransactionsList(session)
   const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm()
   const toast = useToast()
 
@@ -27,7 +32,7 @@ export default function MasterDebtsPage() {
       'Delete this Master Account? Linked transactions will NOT be deleted, but they will become unlinked.',
     )
     if (!confirmed) return
-    await rawDelete(id, { skipConfirm: true })
+    await rawDelete(id)
   }
 
   async function onSubmit(payload) {
@@ -37,6 +42,10 @@ export default function MasterDebtsPage() {
     } catch {
       toast.error('Operation failed.')
     }
+  }
+
+  function handleViewLedger(account) {
+    navigate(viewLedgerPath(account.id))
   }
 
   return (

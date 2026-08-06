@@ -11,14 +11,42 @@ import { runReminderScan, sendTestReminder } from './scheduler.js'
 
 const PORT = Number(process.env.PORT || 8787)
 const CRON_MS = Number(process.env.REMINDER_CRON_MS || 30 * 60 * 1000)
-const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || '*'
+const ALLOWED_ORIGIN = (process.env.CORS_ORIGIN || '*').trim()
+
+const allowedOrigins =
+  ALLOWED_ORIGIN === '*'
+    ? null
+    : ALLOWED_ORIGIN.split(',')
+        .map((s) => s.trim().replace(/\/$/, ''))
+        .filter(Boolean)
+
+const corsOptions = {
+  origin(origin, callback) {
+    // Non-browser clients (curl, Railway health) send no Origin
+    if (!origin) {
+      callback(null, true)
+      return
+    }
+    if (!allowedOrigins) {
+      callback(null, true)
+      return
+    }
+    const normalized = origin.replace(/\/$/, '')
+    if (allowedOrigins.includes(normalized)) {
+      callback(null, true)
+      return
+    }
+    logger.warn({ origin, allowedOrigins }, 'CORS rejected origin')
+    callback(null, false)
+  },
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  optionsSuccessStatus: 204,
+}
 
 const app = express()
-app.use(
-  cors({
-    origin: ALLOWED_ORIGIN === '*' ? true : ALLOWED_ORIGIN.split(',').map((s) => s.trim()),
-  }),
-)
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 app.use(express.json())
 
 async function requireAuth(req, res, next) {
@@ -29,7 +57,6 @@ async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Missing Authorization Bearer token' })
   }
 
-  // Shared secret for ops / health tooling (optional)
   if (process.env.WHATSAPP_API_SECRET && token === process.env.WHATSAPP_API_SECRET) {
     req.auth = { type: 'secret' }
     return next()
@@ -123,19 +150,26 @@ app.post('/reminders/test', requireAuth, async (req, res) => {
 })
 
 async function main() {
-  await startWhatsApp()
+  // Listen BEFORE Baileys so Railway/CORS preflight work while WhatsApp connects
+  await new Promise((resolve) => {
+    app.listen(PORT, () => {
+      logger.info(
+        { port: PORT, cors: allowedOrigins || '*' },
+        'WhatsApp worker listening',
+      )
+      resolve()
+    })
+  })
+
+  startWhatsApp().catch((err) => logger.error({ err }, 'WhatsApp start failed'))
+
   setInterval(() => {
     runReminderScan().catch((err) => logger.error({ err }, 'scheduled scan failed'))
   }, CRON_MS)
 
-  // Kick once shortly after boot
   setTimeout(() => {
     runReminderScan().catch((err) => logger.error({ err }, 'startup scan failed'))
   }, 15_000)
-
-  app.listen(PORT, () => {
-    logger.info(`WhatsApp worker listening on :${PORT}`)
-  })
 }
 
 main().catch((err) => {

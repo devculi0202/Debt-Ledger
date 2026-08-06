@@ -1,5 +1,11 @@
 [build]
 builder = "NIXPACKS"
+# Prefer Railway Root Directory = repository root so @debt-ledger/domain
+# (file:../packages/domain) resolves. Then use:
+#   install: npm install --prefix whatsapp-worker
+#   start:   npm start --prefix whatsapp-worker
+# If Root Directory remains whatsapp-worker/, vendor packages/domain into this
+# folder before deploy.
 
 [deploy]
 startCommand = "npm start"

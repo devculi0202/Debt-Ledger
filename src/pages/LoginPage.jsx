@@ -1,5 +1,5 @@
-import LedgerIcon from '../components/LedgerIcon'
-import Footer from '../components/Footer'
+import LedgerIcon from '@/widgets/LedgerIcon'
+import Footer from '@/widgets/Footer'
 
 function GitHubIcon({ className }) {
   return (

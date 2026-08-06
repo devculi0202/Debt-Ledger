@@ -8,9 +8,12 @@ Baileys needs a long-lived process and a persistent auth volume. Serverless host
 
 ## Railway setup
 
-1. Create a new Railway service from this `whatsapp-worker/` folder (Root Directory = `whatsapp-worker`).
-2. Add a **Volume** mounted at `/data/auth` (or any path).
-3. Set env vars:
+1. Create a new Railway service from this **repository** (Root Directory = repo root, not only `whatsapp-worker/`), so shared `@debt-ledger/domain` installs via `file:../packages/domain`.
+2. Set install / start (or Nixpacks overrides):
+   - Install: `npm install --prefix whatsapp-worker`
+   - Start: `npm start --prefix whatsapp-worker`
+3. Add a **Volume** mounted at `/data/auth` (or any path).
+4. Set env vars:
 
 ```env
 PORT=8787
@@ -19,13 +22,15 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_ANON_KEY=your-anon-key
 WHATSAPP_AUTH_DIR=/data/auth
 REMINDER_CRON_MS=1800000
-CORS_ORIGIN=https://your-vercel-app.vercel.app,http://localhost:5173
+CORS_ORIGIN=https://debt-ledger.devculi.space,http://localhost:5173
 # Optional ops token (also accepted as Bearer):
 # WHATSAPP_API_SECRET=long-random-string
 LOG_LEVEL=info
 ```
 
-4. Deploy. Open the Debt Ledger **Reminder debt** page and scan the QR once (WhatsApp → Linked devices).
+5. Deploy. Open the Debt Ledger **Reminder Debt** page and scan the QR once (WhatsApp → Linked devices).
+
+> If you must keep Railway Root Directory = `whatsapp-worker`, copy `packages/domain` next to this package (or change the `file:` dependency) so `@debt-ledger/domain` still resolves.
 
 ## API
 

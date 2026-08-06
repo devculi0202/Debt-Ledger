@@ -1,17 +1,23 @@
 import { admin } from './supabase.js'
 import { getWhatsAppState, sendTextMessage, logger } from './baileys.js'
+import {
+  formatVND,
+  isUnpaid,
+  DEFAULT_REMINDER_TEMPLATE,
+  DEFAULT_REMINDER_TIMEZONE,
+} from '@debt-ledger/domain'
 
 function todayInTimezone(timeZone) {
   try {
     return new Intl.DateTimeFormat('en-CA', {
-      timeZone: timeZone || 'Asia/Ho_Chi_Minh',
+      timeZone: timeZone || DEFAULT_REMINDER_TIMEZONE,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     }).format(new Date())
   } catch {
     return new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Ho_Chi_Minh',
+      timeZone: DEFAULT_REMINDER_TIMEZONE,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -27,31 +33,14 @@ function subtractDays(isoDate, days) {
   return dt.toISOString().slice(0, 10)
 }
 
-function formatAmount(amount) {
-  try {
-    return Number(amount).toLocaleString('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    })
-  } catch {
-    return String(amount)
-  }
-}
-
 export function renderTemplate(template, debt) {
-  const raw =
-    template ||
-    'Reminder: {person} — {amount} due on {due_date}.'
+  const raw = template || DEFAULT_REMINDER_TEMPLATE
   return raw
     .replaceAll('{person}', debt.person || 'Unknown')
-    .replaceAll('{amount}', formatAmount(debt.amount))
+    .replaceAll('{amount}', formatVND(debt.amount))
     .replaceAll('{due_date}', debt.due_date || '')
     .replaceAll('{type}', debt.type || '')
     .replaceAll('{notes}', debt.notes || '')
-}
-
-function isUnpaid(paid) {
-  return paid !== true && paid !== 'true'
 }
 
 /**

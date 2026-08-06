@@ -1,0 +1,10 @@
+﻿{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@debt-ledger/domain": ["packages/domain/src/index.js"]
+    }
+  },
+  "include": ["src", "packages/domain/src"]
+}

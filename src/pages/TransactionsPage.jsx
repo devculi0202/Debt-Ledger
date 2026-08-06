@@ -1,13 +1,16 @@
-import { useMasterDebtsData, useTransactionsData } from '../contexts/DataContext'
-import TransactionLedger from '../components/TransactionLedger'
-import TransactionModal from '../components/modals/TransactionModal'
-import DuplicateMonthsModal from '../components/modals/DuplicateMonthsModal'
-import ConfirmDialog from '../components/ui/ConfirmDialog'
-import useConfirm from '../hooks/useConfirm'
-import { useToast } from '../components/ui/Toast'
+import useTransactions from '@/features/transactions/hooks/useTransactions'
+import { useMasterDebtsList } from '@/features/master-debts/hooks/useMasterDebtsQuery'
+import { useSessionData } from '@/app/providers/DataProvider'
+import TransactionLedger from '@/features/transactions/ui/TransactionLedger'
+import TransactionModal from '@/features/transactions/ui/TransactionModal'
+import DuplicateMonthsModal from '@/features/transactions/ui/DuplicateMonthsModal'
+import ConfirmDialog from '@/shared/ui/ConfirmDialog'
+import useConfirm from '@/shared/hooks/useConfirm'
+import { useToast } from '@/shared/ui/Toast'
 
 export default function TransactionsPage() {
-  const { masterDebts } = useMasterDebtsData()
+  const session = useSessionData()
+  const { masterDebts } = useMasterDebtsList(session)
   const {
     debts,
     loading,
@@ -23,7 +26,7 @@ export default function TransactionsPage() {
     handleTogglePaid,
     handleDelete: rawDelete,
     handleDuplicateMonths,
-  } = useTransactionsData()
+  } = useTransactions()
   const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm()
   const toast = useToast()
 
@@ -33,7 +36,7 @@ export default function TransactionsPage() {
       'Delete this record? Action cannot be undone.',
     )
     if (!confirmed) return
-    await rawDelete(id, { skipConfirm: true })
+    await rawDelete(id)
   }
 
   async function onSubmit(payload) {
