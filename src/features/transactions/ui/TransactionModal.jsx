@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, Pencil, X, Link2, LoaderCircle } from 'lucide-react'
 import { formatVND } from '@/shared/lib/format'
 import { useToast } from '@/shared/ui/Toast'
+import { useLocale } from '@/shared/i18n'
 
 const emptyForm = {
   type: 'owe',
@@ -24,6 +25,7 @@ export default function TransactionModal({
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const toast = useToast()
+  const { t } = useLocale()
 
   useEffect(() => {
     if (!open) return
@@ -84,7 +86,7 @@ export default function TransactionModal({
     e.preventDefault()
     const amt = parseInt(form.amount, 10)
     if (isNaN(amt) || amt < 0) {
-      toast.warning('Please enter a valid amount.')
+      toast.warning(t('common.pleaseValidAmount'))
       return
     }
 
@@ -123,7 +125,7 @@ export default function TransactionModal({
                 <Plus className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
               )}
             </div>
-            {isEdit ? 'Update Transaction' : 'Log Transaction'}
+            {isEdit ? t('transactions.updateTitle') : t('transactions.logTitle')}
           </h3>
           <button
             type="button"
@@ -137,7 +139,7 @@ export default function TransactionModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Type
+              {t('transactions.type')}
             </label>
             <select
               value={form.type}
@@ -145,26 +147,26 @@ export default function TransactionModal({
               disabled={typeLocked}
               className={`${inputClass} appearance-none disabled:opacity-70 disabled:cursor-not-allowed`}
             >
-              <option value="owe">I Owe (-)</option>
-              <option value="owed">Owed to Me (+)</option>
+              <option value="owe">{t('transactions.iOweMinus')}</option>
+              <option value="owed">{t('transactions.owedToMePlus')}</option>
             </select>
             {typeLocked ? (
               <p className="text-xs text-neu-textMuted mt-1.5 pl-1">
-                Matches the linked debt account. Unlink to change type.
+                {t('transactions.typeLockedHint')}
               </p>
             ) : null}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-primary dark:text-darkNeu-textMain mb-2 pl-1 flex items-center gap-1">
-              <Link2 className="w-3 h-3" /> Link to debt account
+              <Link2 className="w-3 h-3" /> {t('transactions.linkAccount')}
             </label>
             <select
               value={form.account_id}
               onChange={handleChange('account_id')}
               className={`${inputClass} text-xs font-medium appearance-none`}
             >
-              <option value="none">— Standalone (not linked) —</option>
+              <option value="none">{t('transactions.standalone')}</option>
               {masterDebts.map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.type === 'owe' ? '💳' : '💰'} {account.name} (
@@ -173,28 +175,27 @@ export default function TransactionModal({
               ))}
             </select>
             <p className="text-xs text-neu-textMuted mt-1.5 pl-1">
-              Optional. Link payments to an account so they reduce its remaining
-              balance once settled.
+              {t('transactions.linkHint')}
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Person
+              {t('transactions.person')}
             </label>
             <input
               type="text"
               required
               value={form.person}
               onChange={handleChange('person')}
-              placeholder="e.g. Alice"
+              placeholder={t('transactions.personPlaceholder')}
               className={inputClass}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Amount (VNĐ)
+              {t('transactions.amount')}
             </label>
             <div className="relative">
               <input
@@ -216,7 +217,7 @@ export default function TransactionModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-                Tx Date
+                {t('transactions.txDate')}
               </label>
               <input
                 type="date"
@@ -228,7 +229,7 @@ export default function TransactionModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-                Due Date
+                {t('transactions.dueDate')}
               </label>
               <input
                 type="date"
@@ -241,13 +242,13 @@ export default function TransactionModal({
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Notes
+              {t('transactions.notes')}
             </label>
             <input
               type="text"
               value={form.notes}
               onChange={handleChange('notes')}
-              placeholder="Optional"
+              placeholder={t('common.optional')}
               className={inputClass}
             />
           </div>
@@ -258,7 +259,7 @@ export default function TransactionModal({
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -268,9 +269,9 @@ export default function TransactionModal({
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : isEdit ? (
-                'Save'
+                t('common.save')
               ) : (
-                'Add Record'
+                t('transactions.addRecord')
               )}
             </button>
           </div>

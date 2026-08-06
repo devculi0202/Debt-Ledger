@@ -16,6 +16,7 @@ import NeuCard from '@/shared/ui/NeuCard'
 import NeuIconButton from '@/shared/ui/NeuIconButton'
 import NeuButton from '@/shared/ui/NeuButton'
 import Pagination from '@/shared/ui/Pagination'
+import { useLocale } from '@/shared/i18n'
 
 export default function MasterDebtList({
   masterDebts,
@@ -26,6 +27,7 @@ export default function MasterDebtList({
   onDelete,
   onViewLedger,
 }) {
+  const { t } = useLocale()
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function MasterDebtList({
     return (
       <div className="space-y-8">
         <Header onOpenCreate={onOpenCreate} />
-        <LoadingSpinner message="Loading Data..." />
+        <LoadingSpinner message={t('common.loadingData')} />
       </div>
     )
   }
@@ -60,11 +62,10 @@ export default function MasterDebtList({
             <Plus className="w-5 h-5" />
           </div>
           <span className="font-bold text-lg text-neu-textMain dark:text-darkNeu-textMain">
-            Create your first debt account
+            {t('masterDebts.emptyTitle')}
           </span>
           <span className="text-sm mt-2 text-center max-w-xs">
-            Use an account for a loan or ongoing debt. Log each payment under
-            Transactions and link it here.
+            {t('masterDebts.emptyHint')}
           </span>
         </button>
       ) : (
@@ -92,12 +93,13 @@ export default function MasterDebtList({
 }
 
 function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
+  const { t } = useLocale()
   const { linked, settled, amountPaid, remaining, progressPercent } =
     computeAccountSummary(account, debts)
 
   const isOwe = account.type === 'owe'
   const textColor = isOwe ? 'text-brand-negative' : 'text-brand-positive'
-  const badgeText = isOwe ? 'I Owe' : 'Owed To Me'
+  const badgeText = isOwe ? t('masterDebts.iOwe') : t('masterDebts.owedToMe')
   const progressColor = isOwe
     ? 'bg-brand-positive shadow-[0_0_8px_rgba(16,185,129,0.5)]'
     : 'bg-brand-negative shadow-[0_0_8px_rgba(239,68,68,0.5)]'
@@ -127,7 +129,7 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
               </h3>
             </div>
             <p className="text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted">
-              Principal:{' '}
+              {t('masterDebts.principal')}{' '}
               <span className="font-bold text-neu-textMain dark:text-darkNeu-textMain text-base ml-1">
                 {formatVND(account.principal_amount)}
               </span>
@@ -144,10 +146,10 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
         <div className="w-full xl:w-2/5">
           <div className="flex justify-between text-xs font-bold mb-3 tracking-wide">
             <span className="text-brand-positive drop-shadow-sm">
-              Settled: {formatVND(amountPaid)}
+              {t('masterDebts.settled', { amount: formatVND(amountPaid) })}
             </span>
             <span className="text-brand-negative drop-shadow-sm">
-              Remaining: {formatVND(remaining)}
+              {t('masterDebts.remaining', { amount: formatVND(remaining) })}
             </span>
           </div>
           <div className="w-full bg-neu-surface dark:bg-darkNeu-surface rounded-full h-3 shadow-neu-inner dark:shadow-neu-dark-inner overflow-hidden p-[2px]">
@@ -157,8 +159,7 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
             />
           </div>
           <p className="text-[11px] text-neu-textMuted mt-2">
-            Progress counts settled linked payments only. Mark a transaction
-            settled for it to reduce remaining.
+            {t('masterDebts.progressHint')}
           </p>
           <div className="mt-4 flex justify-between items-center">
             <div className="flex gap-4">
@@ -180,10 +181,10 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
                 {progressPercent.toFixed(1)}%
               </span>
               <p className="text-[10px] text-neu-textMuted mt-0.5 uppercase tracking-wider">
-                {linked.length} linked /{' '}
-                <span className="text-brand-positive">
-                  {settled.length} settled
-                </span>
+                {t('masterDebts.linkedSettled', {
+                  linked: linked.length,
+                  settled: settled.length,
+                })}
               </p>
             </div>
           </div>
@@ -191,7 +192,7 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
       </div>
       <div className="mt-8 pt-6 flex justify-end">
         <NeuButton onClick={() => onViewLedger(account)}>
-          View Ledger <ArrowRight className="w-3.5 h-3.5" />
+          {t('masterDebts.viewLedger')} <ArrowRight className="w-3.5 h-3.5" />
         </NeuButton>
       </div>
     </NeuCard>
@@ -199,19 +200,19 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
 }
 
 function Header({ onOpenCreate }) {
+  const { t } = useLocale()
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
       <div>
         <h2 className="text-3xl font-bold text-neu-textMain dark:text-darkNeu-textMain tracking-tight">
-          Debt Accounts
+          {t('masterDebts.title')}
         </h2>
         <p className="text-sm text-neu-textMuted mt-2 font-medium max-w-xl">
-          Long-term loans or debts with a principal. Log each payment under
-          Transactions and link it to an account to track progress.
+          {t('masterDebts.subtitle')}
         </p>
       </div>
       <NeuButton onClick={onOpenCreate} className="w-full sm:w-auto justify-center py-3.5 px-6 gap-3">
-        <Plus className="w-3.5 h-3.5" /> New Account
+        <Plus className="w-3.5 h-3.5" /> {t('masterDebts.newAccount')}
       </NeuButton>
     </div>
   )

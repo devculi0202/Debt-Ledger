@@ -1,6 +1,8 @@
 import { AlertTriangle } from 'lucide-react'
+import { useLocale } from '@/shared/i18n'
 
 export default function ConfirmDialog({ open, title, message, onConfirm, onCancel }) {
+  const { t } = useLocale()
   if (!open) return null
 
   return (
@@ -23,14 +25,14 @@ export default function ConfirmDialog({ open, title, message, onConfirm, onCance
             onClick={onCancel}
             className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="flex-1 px-4 py-3 bg-brand-negative text-white shadow-neu-drop dark:shadow-neu-dark-drop font-semibold rounded-neu-md hover:opacity-90 active:shadow-neu-inner transition-all-custom"
           >
-            Delete
+            {t('common.delete')}
           </button>
         </div>
       </div>

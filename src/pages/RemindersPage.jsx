@@ -16,6 +16,7 @@ import useReminderSettings from '@/features/reminders/hooks/useReminderSettings'
 import useWhatsAppLink from '@/features/reminders/hooks/useWhatsAppLink'
 import * as whatsappApi from '@/features/reminders/api/whatsappApi'
 import logger from '@/shared/lib/logger'
+import { useLocale } from '@/shared/i18n'
 
 const CTX = 'RemindersPage'
 
@@ -25,16 +26,17 @@ const inputClass =
 export default function RemindersPage() {
   const session = useSessionData()
   const toast = useToast()
+  const { t } = useLocale()
   const settings = useReminderSettings(session?.user?.id)
   const whatsapp = useWhatsAppLink()
   const [sendingNow, setSendingNow] = useState(false)
 
   useEffect(() => {
     if (settings.loadError) {
-      toast.error('Could not load reminder settings.')
+      toast.error(t('reminders.loadError'))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- toast omitted intentionally
-  }, [settings.loadError])
+  }, [settings.loadError, t])
 
   async function handleSave(e) {
     e.preventDefault()
@@ -44,41 +46,41 @@ export default function RemindersPage() {
         toast.warning(result.validationError)
         return
       }
-      toast.success('Reminder settings saved.')
+      toast.success(t('reminders.saved'))
     } catch (err) {
-      toast.error(err?.message || 'Failed to save settings.')
+      toast.error(err?.message || t('reminders.saveFailed'))
     }
   }
 
   async function handleDisconnect() {
     try {
       await whatsapp.disconnect()
-      toast.success('WhatsApp disconnected. Scan a new QR to link again.')
+      toast.success(t('reminders.disconnectedToast'))
     } catch (err) {
-      toast.error(err?.message || 'Disconnect failed.')
+      toast.error(err?.message || t('reminders.disconnectFailed'))
     }
   }
 
   async function handleRelink() {
     try {
       await whatsapp.relink()
-      toast.success('Starting a new WhatsApp link — wait for the QR.')
+      toast.success(t('reminders.relinkToast'))
     } catch (err) {
-      toast.error(err?.message || 'Could not start WhatsApp link.')
+      toast.error(err?.message || t('reminders.relinkFailed'))
     }
   }
 
   async function handleSendNow() {
     if (!whatsapp.apiConfigured) {
-      toast.warning('WhatsApp API is not configured.')
+      toast.warning(t('reminders.apiNotConfigured'))
       return
     }
     if (whatsapp.status !== 'connected') {
-      toast.warning('Link WhatsApp before sending reminders.')
+      toast.warning(t('reminders.linkBeforeSend'))
       return
     }
     if (!settings.form.phone.trim()) {
-      toast.warning('Enter a phone number and save settings first.')
+      toast.warning(t('reminders.enterPhoneFirst'))
       return
     }
 
@@ -86,43 +88,43 @@ export default function RemindersPage() {
     try {
       const result = await whatsappApi.runReminders({ force: true })
       if (result?.reason === 'disconnected') {
-        toast.warning('WhatsApp is not connected on the worker.')
+        toast.warning(t('reminders.workerDisconnected'))
         return
       }
       if (result?.reason === 'no_settings') {
-        toast.warning('Save reminder settings first.')
+        toast.warning(t('reminders.saveFirst'))
         return
       }
       if (result?.reason === 'no_phone') {
-        toast.warning('Set a phone number with country code (e.g. 8490…).')
+        toast.warning(t('reminders.setPhone'))
         return
       }
       if (result?.reason === 'no_debts') {
-        toast.warning(
-          'No unpaid transactions with a due date found. Add a due date on Transactions first.',
-        )
+        toast.warning(t('reminders.noDebts'))
         return
       }
       const sent = result?.sent ?? 0
       const failed = result?.failed ?? 0
       if (sent > 0) {
+        const key =
+          sent === 1 ? 'reminders.sentSuccess' : 'reminders.sentSuccessPlural'
         toast.success(
-          `Sent ${sent} reminder${sent === 1 ? '' : 's'} to WhatsApp${
-            failed ? ` (${failed} failed)` : ''
-          }.`,
+          t(key, {
+            sent,
+            failed: failed
+              ? t('reminders.failedSuffix', { failed })
+              : '',
+          }),
         )
       } else if (failed > 0) {
-        toast.error(
-          result?.lastError ||
-            `Failed to send ${failed} reminder${failed === 1 ? '' : 's'}. Check the phone number (e.g. 8490…).`,
-        )
+        const key =
+          failed === 1 ? 'reminders.sendFailed' : 'reminders.sendFailedPlural'
+        toast.error(result?.lastError || t(key, { failed }))
       } else {
-        toast.warning(
-          'Nothing to send — add unpaid transactions that have a due date.',
-        )
+        toast.warning(t('reminders.nothingToSend'))
       }
     } catch (err) {
-      toast.error(err?.message || 'Failed to send reminders.')
+      toast.error(err?.message || t('reminders.sendRemindersFailed'))
       logger.error('send now failed', CTX, err)
     } finally {
       setSendingNow(false)
@@ -131,26 +133,24 @@ export default function RemindersPage() {
 
   async function handleTestMessage() {
     if (!whatsapp.apiConfigured) {
-      toast.warning('WhatsApp API is not configured.')
+      toast.warning(t('reminders.apiNotConfigured'))
       return
     }
     if (whatsapp.status !== 'connected') {
-      toast.warning('Link WhatsApp before sending a test.')
+      toast.warning(t('reminders.linkBeforeTest'))
       return
     }
     if (!settings.form.phone.trim()) {
-      toast.warning('Enter a phone number and save settings first.')
+      toast.warning(t('reminders.enterPhoneFirst'))
       return
     }
 
     setSendingNow(true)
     try {
       await whatsappApi.sendTestReminder()
-      toast.success(
-        'Test sent. Open WhatsApp on the linked phone — check chats / “Message yourself”.',
-      )
+      toast.success(t('reminders.testSent'))
     } catch (err) {
-      toast.error(err?.message || 'Test message failed.')
+      toast.error(err?.message || t('reminders.testFailed'))
       logger.error('test message failed', CTX, err)
     } finally {
       setSendingNow(false)
@@ -162,12 +162,10 @@ export default function RemindersPage() {
       <div>
         <h2 className="text-2xl font-bold flex items-center gap-3 text-neu-textMain dark:text-darkNeu-textMain">
           <Bell className="w-7 h-7" />
-          Reminders
+          {t('reminders.title')}
         </h2>
         <p className="mt-2 text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-2xl">
-          Link WhatsApp once, then get self-reminders for unpaid transactions
-          with a due date. Use Send now for an immediate message, or enable
-          scheduled reminders below.
+          {t('reminders.subtitle')}
         </p>
       </div>
 
@@ -175,7 +173,7 @@ export default function RemindersPage() {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-bold flex items-center gap-2">
             <Link2 className="w-5 h-5" />
-            WhatsApp link
+            {t('reminders.whatsappLink')}
           </h3>
           <NeuButton
             type="button"
@@ -185,14 +183,13 @@ export default function RemindersPage() {
             <RefreshCw
               className={`w-4 h-4 ${whatsapp.loading ? 'animate-spin' : ''}`}
             />
-            Refresh
+            {t('reminders.refresh')}
           </NeuButton>
         </div>
 
         {!whatsapp.apiConfigured ? (
           <p className="text-sm text-brand-negative">
-            WhatsApp reminders are not set up for this deployment. Ask the app
-            admin to configure the WhatsApp worker URL.
+            {t('reminders.notConfigured')}
           </p>
         ) : null}
 
@@ -200,12 +197,11 @@ export default function RemindersPage() {
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
             <div className="space-y-1">
               <p className="text-sm text-brand-positive font-semibold">
-                Connected — session stays linked after you sign out of Debt Ledger.
+                {t('reminders.connected')}
               </p>
               {whatsapp.linkedPhone ? (
                 <p className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
-                  Linked WhatsApp: +{whatsapp.linkedPhone}. Reminder phone should
-                  match this (or another WhatsApp number with country code).
+                  {t('reminders.linkedPhone', { phone: whatsapp.linkedPhone })}
                 </p>
               ) : null}
             </div>
@@ -215,7 +211,7 @@ export default function RemindersPage() {
               disabled={whatsapp.loading}
             >
               <Link2Off className="w-4 h-4" />
-              Disconnect WhatsApp
+              {t('reminders.disconnect')}
             </NeuButton>
           </div>
         ) : null}
@@ -223,11 +219,11 @@ export default function RemindersPage() {
         {whatsapp.apiConfigured && whatsapp.status === 'qr' && whatsapp.qr ? (
           <div className="flex flex-col items-start gap-3">
             <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted">
-              Open WhatsApp → Linked devices → Link a device, then scan this QR.
+              {t('reminders.scanQr')}
             </p>
             <img
               src={whatsapp.qr}
-              alt="WhatsApp QR code"
+              alt={t('reminders.qrAlt')}
               className="w-64 h-64 rounded-neu-md bg-white p-2 shadow-neu-inner dark:shadow-neu-dark-inner"
             />
           </div>
@@ -241,7 +237,7 @@ export default function RemindersPage() {
               {whatsapp.loading ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : null}
-              Disconnected — click Relink to generate a QR code.
+              {t('reminders.disconnected')}
             </p>
             <NeuButton
               type="button"
@@ -254,33 +250,32 @@ export default function RemindersPage() {
               ) : (
                 <Link2 className="w-4 h-4" />
               )}
-              Relink WhatsApp
+              {t('reminders.relink')}
             </NeuButton>
           </div>
         ) : null}
 
         {whatsapp.status === 'error' ? (
           <p className="text-sm text-brand-negative">
-            Could not reach the WhatsApp service. Try again later, or check that
-            the worker is running.
+            {t('reminders.reachError')}
           </p>
         ) : null}
       </NeuCard>
 
       <NeuCard className="p-6">
         <form onSubmit={handleSave} className="space-y-5">
-          <h3 className="font-bold">Reminder settings</h3>
+          <h3 className="font-bold">{t('reminders.settingsTitle')}</h3>
 
           {settings.loading ? (
             <p className="text-sm text-neu-textMuted flex items-center gap-2">
               <LoaderCircle className="w-4 h-4 animate-spin" />
-              Loading…
+              {t('common.loading')}
             </p>
           ) : (
             <>
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-neu-textMuted">
-                  Phone number (country code, no + — e.g. 84901234567)
+                  {t('reminders.phoneLabel')}
                 </span>
                 <input
                   className={inputClass}
@@ -290,14 +285,13 @@ export default function RemindersPage() {
                   inputMode="tel"
                 />
                 <span className="text-xs text-neu-textMuted">
-                  Must be a WhatsApp number. Local 09… is auto-converted to 849….
-                  Prefer the same number as the linked device above.
+                  {t('reminders.phoneHint')}
                 </span>
               </label>
 
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-neu-textMuted">
-                  Message template
+                  {t('reminders.messageTemplate')}
                 </span>
                 <textarea
                   className={`${inputClass} min-h-28`}
@@ -306,15 +300,14 @@ export default function RemindersPage() {
                   rows={4}
                 />
                 <span className="text-xs text-neu-textMuted">
-                  Placeholders: {'{person}'}, {'{amount}'}, {'{due_date}'},{' '}
-                  {'{type}'}, {'{notes}'}
+                  {t('reminders.placeholders')}
                 </span>
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-neu-textMuted">
-                    Days before due date
+                    {t('reminders.daysBefore')}
                   </span>
                   <input
                     type="number"
@@ -327,7 +320,7 @@ export default function RemindersPage() {
 
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-neu-textMuted">
-                    Timezone
+                    {t('reminders.timezone')}
                   </span>
                   <input
                     className={inputClass}
@@ -345,7 +338,9 @@ export default function RemindersPage() {
                   onChange={settings.handleChange('enabled')}
                   className="w-5 h-5"
                 />
-                <span className="text-sm font-medium">Enable reminders</span>
+                <span className="text-sm font-medium">
+                  {t('reminders.enable')}
+                </span>
               </label>
 
               <div className="flex flex-wrap gap-3">
@@ -359,7 +354,7 @@ export default function RemindersPage() {
                   ) : (
                     <Save className="w-4 h-4" />
                   )}
-                  Save settings
+                  {t('reminders.saveSettings')}
                 </NeuButton>
                 <NeuButton
                   type="button"
@@ -376,7 +371,7 @@ export default function RemindersPage() {
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  Send now
+                  {t('reminders.sendNow')}
                 </NeuButton>
                 <NeuButton
                   type="button"
@@ -388,13 +383,11 @@ export default function RemindersPage() {
                     settings.loading
                   }
                 >
-                  Test message
+                  {t('reminders.testMessage')}
                 </NeuButton>
               </div>
               <p className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted">
-                Send now messages all unpaid debts that have a due date (does not
-                wait for the remind day). Test message only checks WhatsApp
-                delivery. Phone must include country code (e.g. 84901234567).
+                {t('reminders.sendHint')}
               </p>
             </>
           )}

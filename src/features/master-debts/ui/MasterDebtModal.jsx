@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Layers, Pencil, X, ArrowDown, ArrowUp, LoaderCircle } from 'lucide-react'
 import { useToast } from '@/shared/ui/Toast'
+import { useLocale } from '@/shared/i18n'
 
 const emptyForm = {
   name: '',
@@ -19,6 +20,7 @@ export default function MasterDebtModal({
   const [form, setForm] = useState(emptyForm)
   const [submitting, setSubmitting] = useState(false)
   const toast = useToast()
+  const { t } = useLocale()
 
   useEffect(() => {
     if (!open) return
@@ -47,7 +49,7 @@ export default function MasterDebtModal({
     const name = form.name.trim()
     const principal = parseInt(form.principal, 10)
     if (!name || isNaN(principal) || principal < 0) {
-      toast.warning('Please fill in valid information.')
+      toast.warning(t('common.pleaseValidInfo'))
       return
     }
 
@@ -83,7 +85,7 @@ export default function MasterDebtModal({
                 <Layers className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
               )}
             </div>
-            {isEdit ? 'Edit Debt Account' : 'Create Debt Account'}
+            {isEdit ? t('masterDebts.editTitle') : t('masterDebts.createTitle')}
           </h3>
           <button
             type="button"
@@ -97,21 +99,21 @@ export default function MasterDebtModal({
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Account Name
+              {t('masterDebts.accountName')}
             </label>
             <input
               type="text"
               required
               value={form.name}
               onChange={handleChange('name')}
-              placeholder="e.g. Vay mua laptop..."
+              placeholder={t('masterDebts.accountNamePlaceholder')}
               className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-sm placeholder:text-neu-textMuted/50 border-none"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Debt Type
+              {t('masterDebts.debtType')}
             </label>
             <div className="grid grid-cols-2 gap-4">
               <label className={typeLabelClass('owe')}>
@@ -125,7 +127,7 @@ export default function MasterDebtModal({
                 />
                 <div className="flex items-center gap-2 mx-auto">
                   <ArrowDown className="w-3.5 h-3.5" />
-                  <span className="text-sm font-semibold">I Owe (-)</span>
+                  <span className="text-sm font-semibold">{t('masterDebts.iOweMinus')}</span>
                 </div>
               </label>
               <label className={typeLabelClass('owed')}>
@@ -139,7 +141,7 @@ export default function MasterDebtModal({
                 />
                 <div className="flex items-center gap-2 mx-auto">
                   <ArrowUp className="w-3.5 h-3.5" />
-                  <span className="text-sm font-semibold">Owed to Me (+)</span>
+                  <span className="text-sm font-semibold">{t('masterDebts.owedToMePlus')}</span>
                 </div>
               </label>
             </div>
@@ -147,7 +149,7 @@ export default function MasterDebtModal({
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Principal Amount (VNĐ)
+              {t('masterDebts.principalAmount')}
             </label>
             <div className="relative">
               <input
@@ -167,13 +169,13 @@ export default function MasterDebtModal({
 
           <div>
             <label className="block text-sm font-medium text-neu-textMuted dark:text-darkNeu-textMuted mb-2 pl-1">
-              Person (optional)
+              {t('masterDebts.personOptional')}
             </label>
             <input
               type="text"
               value={form.creditor}
               onChange={handleChange('creditor')}
-              placeholder="e.g. FE Credit, Alice"
+              placeholder={t('masterDebts.personPlaceholder')}
               className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-sm placeholder:text-neu-textMuted/50 border-none"
             />
           </div>
@@ -184,7 +186,7 @@ export default function MasterDebtModal({
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -194,9 +196,9 @@ export default function MasterDebtModal({
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : isEdit ? (
-                'Save'
+                t('common.save')
               ) : (
-                'Create'
+                t('common.create')
               )}
             </button>
           </div>

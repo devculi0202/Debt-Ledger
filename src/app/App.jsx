@@ -9,17 +9,19 @@ import { DataProvider } from '@/app/providers/DataProvider'
 import AuthenticatedShell from '@/app/layouts/AuthenticatedShell'
 import useAuth from '@/features/auth/hooks/useAuth'
 import useTheme from '@/shared/hooks/useTheme'
+import { useLocale } from '@/shared/i18n'
 
 export default function App() {
   const { session, userName, signIn, signOut } = useAuth()
   const { isDarkMode, toggleDarkMode } = useTheme()
+  const { t } = useLocale()
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   if (session === undefined) {
     return (
       <div className="bg-neu-bg dark:bg-darkNeu-bg min-h-screen flex items-center justify-center text-neu-textMuted dark:text-darkNeu-textMuted">
-        Loading…
+        {t('common.loading')}
       </div>
     )
   }

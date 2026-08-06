@@ -7,9 +7,11 @@ import DuplicateMonthsModal from '@/features/transactions/ui/DuplicateMonthsModa
 import ConfirmDialog from '@/shared/ui/ConfirmDialog'
 import useConfirm from '@/shared/hooks/useConfirm'
 import { useToast } from '@/shared/ui/Toast'
+import { useLocale } from '@/shared/i18n'
 
 export default function TransactionsPage() {
   const session = useSessionData()
+  const { t } = useLocale()
   const { masterDebts } = useMasterDebtsList(session)
   const {
     debts,
@@ -32,8 +34,8 @@ export default function TransactionsPage() {
 
   async function handleDelete(id) {
     const confirmed = await confirm(
-      'Delete Record',
-      'Delete this record? Action cannot be undone.',
+      t('transactions.deleteTitle'),
+      t('transactions.deleteMessage'),
     )
     if (!confirmed) return
     await rawDelete(id)
@@ -42,20 +44,26 @@ export default function TransactionsPage() {
   async function onSubmit(payload) {
     try {
       await handleSubmit(payload)
-      toast.success(modal.mode === 'edit' ? 'Transaction updated.' : 'Transaction added.')
+      toast.success(
+        modal.mode === 'edit'
+          ? t('transactions.updated')
+          : t('transactions.added'),
+      )
     } catch {
-      toast.error('Operation failed.')
+      toast.error(t('common.operationFailed'))
     }
   }
 
   async function onDuplicateSubmit(payloads) {
     try {
       await handleDuplicateMonths(payloads)
-      toast.success(
-        `Created ${payloads.length} transaction${payloads.length !== 1 ? 's' : ''}.`,
-      )
+      const key =
+        payloads.length === 1
+          ? 'transactions.createdCount'
+          : 'transactions.createdCountPlural'
+      toast.success(t(key, { count: payloads.length }))
     } catch {
-      toast.error('Duplicate failed.')
+      toast.error(t('transactions.duplicateFailed'))
     }
   }
 

@@ -1,4 +1,7 @@
-export default function EmptyState({ icon: Icon, message = 'No records found' }) {
+import { useLocale } from '@/shared/i18n'
+
+export default function EmptyState({ icon: Icon, message }) {
+  const { t } = useLocale()
   return (
     <div className="flex flex-col items-center justify-center py-20 text-neu-textMuted">
       {Icon && (
@@ -6,7 +9,7 @@ export default function EmptyState({ icon: Icon, message = 'No records found' })
           <Icon className="w-6 h-6" />
         </div>
       )}
-      <p className="font-bold">{message}</p>
+      <p className="font-bold">{message ?? t('common.noRecords')}</p>
     </div>
   )
 }

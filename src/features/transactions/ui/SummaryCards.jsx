@@ -1,5 +1,6 @@
 import { formatVND } from '@/shared/lib/format'
 import NeuCard from '@/shared/ui/NeuCard'
+import { useLocale } from '@/shared/i18n'
 
 export default function SummaryCards({
   net,
@@ -7,6 +8,7 @@ export default function SummaryCards({
   totalLiabilities,
   periodText,
 }) {
+  const { t } = useLocale()
   const netClass =
     net > 0
       ? 'text-brand-positive drop-shadow-sm'
@@ -18,7 +20,7 @@ export default function SummaryCards({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
       <NeuCard className="p-8 flex flex-col justify-center">
         <p className="text-sm font-semibold text-neu-textMuted mb-2">
-          Net Position{' '}
+          {t('transactions.netPosition')}{' '}
           <span className="font-normal text-xs ml-1 opacity-70">
             {periodText}
           </span>
@@ -31,7 +33,7 @@ export default function SummaryCards({
       <NeuCard className="p-8 flex flex-col justify-center relative overflow-hidden">
         <div className="absolute right-0 top-0 w-2 h-full bg-brand-positive/80 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
         <p className="text-sm font-semibold text-neu-textMuted mb-2">
-          Receivables{' '}
+          {t('transactions.receivables')}{' '}
           <span className="font-normal text-xs ml-1 opacity-70">
             {periodText}
           </span>
@@ -44,7 +46,7 @@ export default function SummaryCards({
       <NeuCard className="p-8 flex flex-col justify-center relative overflow-hidden">
         <div className="absolute right-0 top-0 w-2 h-full bg-brand-negative/80 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
         <p className="text-sm font-semibold text-neu-textMuted mb-2">
-          Liabilities{' '}
+          {t('transactions.liabilities')}{' '}
           <span className="font-normal text-xs ml-1 opacity-70">
             {periodText}
           </span>

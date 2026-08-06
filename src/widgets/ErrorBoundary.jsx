@@ -1,5 +1,6 @@
 import { Component } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { t } from '@/shared/i18n'
 
 export default class ErrorBoundary extends Component {
   constructor(props) {
@@ -21,17 +22,17 @@ export default class ErrorBoundary extends Component {
             <AlertTriangle className="w-7 h-7" />
           </div>
           <h2 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
-            Something went wrong
+            {t('error.title')}
           </h2>
           <p className="text-sm text-neu-textMuted">
-            {this.state.error?.message || 'An unexpected error occurred.'}
+            {this.state.error?.message || t('error.unexpected')}
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
             className="px-6 py-3 bg-neu-primary text-white rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop font-semibold hover:opacity-90 transition-all-custom"
           >
-            Reload Page
+            {t('error.reload')}
           </button>
         </div>
       </div>

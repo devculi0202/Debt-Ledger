@@ -1,5 +1,7 @@
 import LedgerIcon from '@/widgets/LedgerIcon'
 import Footer from '@/widgets/Footer'
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher'
+import { useLocale } from '@/shared/i18n'
 
 function GitHubIcon({ className }) {
   return (
@@ -15,17 +17,23 @@ function GitHubIcon({ className }) {
 }
 
 export default function LoginPage({ onSignIn }) {
+  const { t } = useLocale()
+
   return (
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-neu-bg dark:bg-darkNeu-bg transition-opacity duration-300">
+        <div className="absolute top-6 right-6 w-auto">
+          <LanguageSwitcher className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-sm font-medium text-neu-textMuted transition-all-custom" />
+        </div>
+
         <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop mb-2">
             <LedgerIcon className="w-8 h-8 text-neu-primary dark:text-darkNeu-textMain" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Welcome Back</h1>
+            <h1 className="text-2xl font-bold">{t('login.welcome')}</h1>
             <p className="text-neu-textMuted dark:text-darkNeu-textMuted mt-2 text-sm">
-              Sign in to manage your financial ledgers.
+              {t('login.subtitle')}
             </p>
           </div>
           <button
@@ -34,7 +42,7 @@ export default function LoginPage({ onSignIn }) {
             className="w-full flex items-center justify-center gap-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop hover:shadow-neu-inner dark:hover:shadow-neu-dark-inner font-semibold py-3 px-4 rounded-neu-md transition-all-custom"
           >
             <GitHubIcon className="w-5 h-5" />
-            Continue with GitHub
+            {t('login.continueGithub')}
           </button>
         </div>
 

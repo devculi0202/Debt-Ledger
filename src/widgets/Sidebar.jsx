@@ -12,6 +12,8 @@ import {
   Sun,
 } from 'lucide-react'
 import LedgerIcon from './LedgerIcon'
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher'
+import { useLocale } from '@/shared/i18n'
 
 export default function Sidebar({
   userName,
@@ -23,6 +25,7 @@ export default function Sidebar({
   isMobileOpen = false,
   onMobileClose,
 }) {
+  const { t } = useLocale()
   const navActive =
     'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain'
   const navInactive =
@@ -48,13 +51,13 @@ export default function Sidebar({
       <div className="h-20 flex items-center justify-between px-6 shrink-0 pt-4">
         <h1 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain flex items-center overflow-hidden whitespace-nowrap sidebar-text pl-2">
           <LedgerIcon className="text-neu-primary dark:text-darkNeu-textMain mr-3 w-5 h-5" />
-          Ledger
+          {t('nav.ledger')}
         </h1>
         <button
           type="button"
           onClick={isMobileOpen ? onMobileClose : onToggleExpand}
           className="w-10 h-10 flex items-center justify-center rounded-full text-neu-textMuted shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner transition shrink-0"
-          aria-label={isMobileOpen ? 'Close menu' : 'Toggle sidebar'}
+          aria-label={isMobileOpen ? t('common.closeMenu') : t('common.toggleSidebar')}
         >
           {isMobileOpen ? (
             <X className="w-4 h-4" />
@@ -69,60 +72,62 @@ export default function Sidebar({
       <nav className="flex-1 overflow-y-auto py-8 px-4 space-y-4 overflow-x-hidden">
         <NavLink
           to="/master-debts"
-          title="Debt Accounts"
+          title={t('nav.debtAccounts')}
           className={linkClass}
           onClick={onMobileClose}
         >
           <Layers className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Debt Accounts</span>
+          <span className="sidebar-text whitespace-nowrap">{t('nav.debtAccounts')}</span>
         </NavLink>
 
         <NavLink
           to="/transactions"
-          title="Transactions"
+          title={t('nav.transactions')}
           className={linkClass}
           onClick={onMobileClose}
         >
           <List className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Transactions</span>
+          <span className="sidebar-text whitespace-nowrap">{t('nav.transactions')}</span>
         </NavLink>
 
         <NavLink
           to="/reminders"
-          title="Reminders"
+          title={t('nav.reminders')}
           className={linkClass}
           onClick={onMobileClose}
         >
           <Bell className="w-5 h-5 shrink-0" />
-          <span className="sidebar-text whitespace-nowrap">Reminders</span>
+          <span className="sidebar-text whitespace-nowrap">{t('nav.reminders')}</span>
         </NavLink>
       </nav>
 
-      <div className="p-6 shrink-0 pb-8 space-y-6">
+      <div className="p-6 shrink-0 pb-8 space-y-4">
         <div className="flex items-center justify-between user-info">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-10 h-10 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center text-neu-primary dark:text-darkNeu-textMain font-bold text-sm shrink-0">
               <User className="w-4 h-4" />
             </div>
             <span className="text-sm font-semibold text-neu-textMain dark:text-darkNeu-textMain whitespace-nowrap truncate">
-              {userName || 'User'}
+              {userName || t('common.user')}
             </span>
           </div>
           <button
             type="button"
             onClick={onSignOut}
             className="w-10 h-10 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop flex items-center justify-center text-neu-textMuted hover:text-brand-negative active:shadow-neu-inner transition"
-            title="Sign Out"
+            title={t('common.signOut')}
           >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
 
+        <LanguageSwitcher expanded={showExpanded} />
+
         <button
           type="button"
           onClick={onToggleDarkMode}
           className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-sm font-medium text-neu-textMuted transition-all-custom"
-          title="Toggle Theme"
+          title={t('common.toggleTheme')}
         >
           {isDarkMode ? (
             <Sun className="w-4 h-4 shrink-0" />
@@ -130,7 +135,7 @@ export default function Sidebar({
             <Moon className="w-4 h-4 shrink-0" />
           )}
           <span className="theme-btn-text sidebar-text whitespace-nowrap">
-            {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            {isDarkMode ? t('common.lightMode') : t('common.darkMode')}
           </span>
         </button>
       </div>

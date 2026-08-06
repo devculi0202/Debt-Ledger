@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import * as remindersService from '../api/reminders'
 import logger from '@/shared/lib/logger'
 import { DEFAULT_REMINDER_TIMEZONE } from '@debt-ledger/domain'
+import { t } from '@/shared/i18n'
 
 const CTX = 'useReminderSettings'
 
@@ -55,10 +56,10 @@ export default function useReminderSettings(userId) {
   }, [userId])
 
   useEffect(() => {
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       void load().catch(() => {})
     }, 0)
-    return () => clearTimeout(t)
+    return () => clearTimeout(timer)
   }, [load])
 
   function setField(field, value) {
@@ -77,20 +78,22 @@ export default function useReminderSettings(userId) {
    * @returns {{ ok: true } | { ok: false, validationError: string }}
    */
   async function save() {
-    if (!userId) return { ok: false, validationError: 'Not signed in.' }
+    if (!userId) {
+      return { ok: false, validationError: t('reminders.notSignedIn') }
+    }
 
     const phone = String(form.phone).trim()
     if (form.enabled && !phone) {
       return {
         ok: false,
-        validationError: 'Enter a phone number before enabling reminders.',
+        validationError: t('reminders.phoneRequired'),
       }
     }
     const days = parseInt(form.days_before, 10)
     if (Number.isNaN(days) || days < 0) {
       return {
         ok: false,
-        validationError: 'Days before due must be 0 or greater.',
+        validationError: t('reminders.daysInvalid'),
       }
     }
 

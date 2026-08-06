@@ -6,6 +6,7 @@ import {
   buildDuplicatePayloads,
   findMonthConflicts,
 } from '@/entities/transaction/duplicateTransactionMonths'
+import { useLocale } from '@/shared/i18n'
 
 const ALL_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
 
@@ -17,6 +18,7 @@ export default function DuplicateMonthsModal({
   onClose,
   onSubmit,
 }) {
+  const { t } = useLocale()
   const [selectedMonths, setSelectedMonths] = useState(new Set())
   const [submitting, setSubmitting] = useState(false)
 
@@ -76,6 +78,13 @@ export default function DuplicateMonthsModal({
     }
   }
 
+  const previewKey =
+    targetCount === 1 ? 'transactions.preview' : 'transactions.previewPlural'
+  const createKey =
+    targetCount === 1
+      ? 'transactions.createRecords'
+      : 'transactions.createRecordsPlural'
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neu-bg/80 dark:bg-darkNeu-bg/80 backdrop-blur-md transition-opacity px-4">
       <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-lg rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all max-h-[95vh] overflow-y-auto">
@@ -84,7 +93,7 @@ export default function DuplicateMonthsModal({
             <div className="w-8 h-8 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center">
               <Copy className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
             </div>
-            Duplicate to Months
+            {t('transactions.duplicateTitle')}
           </h3>
           <button
             type="button"
@@ -104,7 +113,10 @@ export default function DuplicateMonthsModal({
             {linkedAcc ? ` · ${linkedAcc.name}` : ''}
           </div>
           <div className="text-xs text-neu-textMuted">
-            Source: T{sourceMonth} — {sourceDebt.notes || '(no notes)'}
+            {t('transactions.source', {
+              month: sourceMonth,
+              notes: sourceDebt.notes || t('transactions.noNotes'),
+            })}
           </div>
         </div>
 
@@ -112,7 +124,7 @@ export default function DuplicateMonthsModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-neu-textMuted pl-1">
-                Select months
+                {t('transactions.selectMonths')}
               </label>
               <div className="flex gap-2 text-xs">
                 <button
@@ -120,7 +132,7 @@ export default function DuplicateMonthsModal({
                   onClick={selectAll}
                   className="text-neu-primary hover:underline font-medium"
                 >
-                  Select all
+                  {t('transactions.selectAll')}
                 </button>
                 <span className="text-neu-textMuted">·</span>
                 <button
@@ -128,7 +140,7 @@ export default function DuplicateMonthsModal({
                   onClick={clearAll}
                   className="text-neu-textMuted hover:underline font-medium"
                 >
-                  Clear
+                  {t('common.clear')}
                 </button>
               </div>
             </div>
@@ -141,7 +153,9 @@ export default function DuplicateMonthsModal({
                     type="button"
                     disabled={isSource}
                     onClick={() => toggleMonth(month)}
-                    title={isSource ? 'Source month (skipped)' : undefined}
+                    title={
+                      isSource ? t('transactions.sourceMonthTitle') : undefined
+                    }
                     className={`py-2 rounded-neu-md text-xs font-bold transition-all-custom ${
                       isSource
                         ? 'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMuted cursor-not-allowed opacity-60'
@@ -153,7 +167,7 @@ export default function DuplicateMonthsModal({
                     T{month}
                     {isSource && (
                       <span className="block text-[8px] font-normal normal-case">
-                        source
+                        {t('transactions.sourceMonth')}
                       </span>
                     )}
                   </button>
@@ -166,8 +180,9 @@ export default function DuplicateMonthsModal({
             <div className="flex gap-2 p-3 rounded-neu-md bg-brand-warning/10 text-brand-warning text-xs">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>
-                Warning: T{conflicts.join(', T')} already have records for this
-                account. Duplicates will still be created if you continue.
+                {t('transactions.conflictWarning', {
+                  months: conflicts.join(', T'),
+                })}
               </span>
             </div>
           )}
@@ -175,15 +190,21 @@ export default function DuplicateMonthsModal({
           {preview.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-neu-textMuted mb-2 pl-1">
-                Preview ({targetCount} record{targetCount !== 1 ? 's' : ''})
+                {t(previewKey, { count: targetCount })}
               </label>
               <div className="max-h-40 overflow-y-auto rounded-neu-md shadow-neu-inner dark:shadow-neu-dark-inner">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-neu-textMuted uppercase tracking-wider text-[10px]">
-                      <th className="px-3 py-2 text-left">Month</th>
-                      <th className="px-3 py-2 text-left">Due</th>
-                      <th className="px-3 py-2 text-left">Notes</th>
+                      <th className="px-3 py-2 text-left">
+                        {t('transactions.month')}
+                      </th>
+                      <th className="px-3 py-2 text-left">
+                        {t('transactions.dueCol')}
+                      </th>
+                      <th className="px-3 py-2 text-left">
+                        {t('transactions.notesCol')}
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -213,7 +234,7 @@ export default function DuplicateMonthsModal({
               onClick={onClose}
               className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
@@ -223,7 +244,7 @@ export default function DuplicateMonthsModal({
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : (
-                `Create ${targetCount} record${targetCount !== 1 ? 's' : ''}`
+                t(createKey, { count: targetCount })
               )}
             </button>
           </div>

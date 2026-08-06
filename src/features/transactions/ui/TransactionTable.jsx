@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { formatVND, isSettled } from '@/shared/lib/format'
 import NeuIconButton from '@/shared/ui/NeuIconButton'
+import { useLocale } from '@/shared/i18n'
 
 export default function TransactionTable({
   debts,
@@ -20,18 +21,19 @@ export default function TransactionTable({
   onDelete,
   onDuplicate,
 }) {
+  const { t } = useLocale()
   if (debts.length === 0) return null
 
   return (
     <table className="w-full text-left border-collapse min-w-[750px]">
       <thead>
         <tr className="text-neu-textMuted text-[11px] uppercase tracking-widest font-bold">
-          <th className="px-4 py-4 w-36">Status / Date</th>
-          <th className="px-4 py-4">Person</th>
-          <th className="px-4 py-4">Debt Account</th>
-          <th className="px-4 py-4">Details</th>
-          <th className="px-4 py-4 text-right">Amount (VNĐ)</th>
-          <th className="px-4 py-4 text-center">Actions</th>
+          <th className="px-4 py-4 w-36">{t('transactions.statusDate')}</th>
+          <th className="px-4 py-4">{t('transactions.person')}</th>
+          <th className="px-4 py-4">{t('transactions.debtAccount')}</th>
+          <th className="px-4 py-4">{t('transactions.details')}</th>
+          <th className="px-4 py-4 text-right">{t('transactions.amountVnd')}</th>
+          <th className="px-4 py-4 text-center">{t('transactions.actions')}</th>
         </tr>
       </thead>
       <tbody className="text-sm">
@@ -61,6 +63,7 @@ function TransactionRow({
   onDelete,
   onDuplicate,
 }) {
+  const { t } = useLocale()
   const settled = isSettled(debt.paid)
   const badgeColor = settled
     ? 'text-neu-textMuted'
@@ -68,10 +71,10 @@ function TransactionRow({
       ? 'text-brand-positive drop-shadow-sm'
       : 'text-brand-negative drop-shadow-sm'
   const statusLabel = settled
-    ? 'Settled'
+    ? t('transactions.settled')
     : debt.type === 'owed'
-      ? 'Owed to Me'
-      : 'I Owe'
+      ? t('transactions.owedToMe')
+      : t('transactions.iOwe')
   const amountColor = settled
     ? 'text-neu-textMuted line-through'
     : debt.type === 'owed'
@@ -136,7 +139,7 @@ function TransactionRow({
             className={`text-[10px] text-brand-warning mt-1 font-bold uppercase tracking-wider flex items-center gap-1 ${settled ? 'line-through' : ''}`}
           >
             <Timer className="w-3 h-3" />
-            Due: {debt.due_date}
+            {t('transactions.due', { date: debt.due_date })}
           </div>
         ) : null}
       </td>
@@ -150,7 +153,7 @@ function TransactionRow({
           size="sm"
           onClick={() => onTogglePaid(debt.id)}
           className="hover:text-brand-positive"
-          title="Toggle Status"
+          title={t('transactions.toggleStatus')}
         >
           {settled ? (
             <RotateCcw className="w-3.5 h-3.5" />
@@ -162,7 +165,7 @@ function TransactionRow({
           size="sm"
           onClick={() => onEdit(debt)}
           className="hover:text-neu-textMain"
-          title="Edit"
+          title={t('common.edit')}
         >
           <Pencil className="w-3.5 h-3.5" />
         </NeuIconButton>
@@ -170,7 +173,7 @@ function TransactionRow({
           size="sm"
           onClick={() => onDelete(debt.id)}
           className="hover:text-brand-negative"
-          title="Delete"
+          title={t('common.delete')}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </NeuIconButton>
@@ -178,7 +181,7 @@ function TransactionRow({
           size="sm"
           onClick={() => onDuplicate(debt)}
           className="hover:text-neu-primary"
-          title="Duplicate to months"
+          title={t('transactions.duplicateToMonths')}
         >
           <Copy className="w-3.5 h-3.5" />
         </NeuIconButton>

@@ -3,10 +3,12 @@ import { Mic, MicOff, LoaderCircle } from 'lucide-react'
 import useMediaRecorder from '@/shared/hooks/useMediaRecorder'
 import useDebtSubmit from '../hooks/useDebtSubmit'
 import { useToast } from '@/shared/ui/Toast'
+import { useLocale } from '@/shared/i18n'
 
 export default function VoiceDebtInput({ onSuccess }) {
   const [text, setText] = useState('')
   const toast = useToast()
+  const { t } = useLocale()
   const { isRecording, isSupported, error: recorderError, start, stop } =
     useMediaRecorder()
   const { status, error: submitError, submitTextDebt, submitAudioDebt } =
@@ -36,9 +38,9 @@ export default function VoiceDebtInput({ onSuccess }) {
       setText('')
       try {
         await onSuccess?.(data)
-        toast.success('Transaction added.')
+        toast.success(t('voice.added'))
       } catch {
-        toast.error('Failed to save transaction.')
+        toast.error(t('voice.saveFailed'))
       }
     }
   }
@@ -53,7 +55,6 @@ export default function VoiceDebtInput({ onSuccess }) {
       /* ignore */
     }
     await start()
-    // User released before getUserMedia / recorder finished starting
     if (!holdingRef.current && !endingRef.current) {
       await stop()
     }
@@ -74,9 +75,9 @@ export default function VoiceDebtInput({ onSuccess }) {
       if (data != null) {
         try {
           await onSuccess?.(data)
-          toast.success('Transaction added.')
+          toast.success(t('voice.added'))
         } catch {
-          toast.error('Failed to save transaction.')
+          toast.error(t('voice.saveFailed'))
         }
       }
     } finally {
@@ -88,7 +89,7 @@ export default function VoiceDebtInput({ onSuccess }) {
     <div
       className="fixed bottom-24 right-6 z-50 w-[min(22rem,calc(100vw-3rem))]"
       role="region"
-      aria-label="Voice and text debt input"
+      aria-label={t('voice.regionLabel')}
     >
       <form
         onSubmit={handleTextSubmit}
@@ -100,9 +101,11 @@ export default function VoiceDebtInput({ onSuccess }) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             disabled={disabled}
-            placeholder={isRecording ? 'Recording…' : 'Type a debt…'}
+            placeholder={
+              isRecording ? t('voice.recording') : t('voice.placeholder')
+            }
             className="w-full bg-transparent outline-none text-sm text-neu-textMain dark:text-darkNeu-textMain placeholder:text-neu-textMuted disabled:opacity-60"
-            aria-label="Debt text input"
+            aria-label={t('voice.inputLabel')}
           />
           {isRecording ? (
             <span
@@ -122,10 +125,10 @@ export default function VoiceDebtInput({ onSuccess }) {
           onContextMenu={(e) => e.preventDefault()}
           aria-label={
             !isSupported
-              ? 'Microphone not supported'
+              ? t('voice.micUnsupported')
               : isRecording
-                ? 'Recording — release to send'
-                : 'Hold to record voice debt'
+                ? t('voice.recordingRelease')
+                : t('voice.holdToRecord')
           }
           className={`relative w-10 h-10 shrink-0 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner inline-flex justify-center items-center transition-all-custom select-none touch-none ${
             isRecording

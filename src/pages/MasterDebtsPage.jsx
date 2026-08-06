@@ -8,10 +8,12 @@ import ConfirmDialog from '@/shared/ui/ConfirmDialog'
 import useConfirm from '@/shared/hooks/useConfirm'
 import { useToast } from '@/shared/ui/Toast'
 import { viewLedgerPath } from '@/entities/transaction/transactionFilters'
+import { useLocale } from '@/shared/i18n'
 
 export default function MasterDebtsPage() {
   const navigate = useNavigate()
   const session = useSessionData()
+  const { t } = useLocale()
   const {
     masterDebts,
     loading,
@@ -28,8 +30,8 @@ export default function MasterDebtsPage() {
 
   async function handleDelete(id) {
     const confirmed = await confirm(
-      'Delete Account',
-      'Delete this debt account? Linked transactions will not be deleted, but they will become unlinked.',
+      t('masterDebts.deleteTitle'),
+      t('masterDebts.deleteMessage'),
     )
     if (!confirmed) return
     await rawDelete(id)
@@ -38,9 +40,13 @@ export default function MasterDebtsPage() {
   async function onSubmit(payload) {
     try {
       await handleSubmit(payload)
-      toast.success(modal.mode === 'edit' ? 'Account updated.' : 'Account created.')
+      toast.success(
+        modal.mode === 'edit'
+          ? t('masterDebts.updated')
+          : t('masterDebts.created'),
+      )
     } catch {
-      toast.error('Operation failed.')
+      toast.error(t('common.operationFailed'))
     }
   }
 

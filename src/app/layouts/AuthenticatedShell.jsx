@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon, Languages } from 'lucide-react'
 import LedgerIcon from '@/widgets/LedgerIcon'
 import Calculator from '@/features/calculator/ui/Calculator'
 import VoiceDebtInputConnected from '@/features/voice-debt/ui/VoiceDebtInputConnected'
 import Sidebar from '@/widgets/Sidebar'
 import Footer from '@/widgets/Footer'
+import { useLocale } from '@/shared/i18n'
 
 export default function AuthenticatedShell({
   userName,
@@ -19,6 +20,8 @@ export default function AuthenticatedShell({
   onCloseMobileNav,
 }) {
   const [calcOpen, setCalcOpen] = useState(false)
+  const { t, toggleLocale, locale } = useLocale()
+
   return (
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
       <div className="flex-1 flex h-screen w-full overflow-hidden">
@@ -36,7 +39,7 @@ export default function AuthenticatedShell({
         {isMobileNavOpen ? (
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={t('common.closeMenu')}
             className="fixed inset-0 z-30 bg-black/40 md:hidden"
             onClick={onCloseMobileNav}
           />
@@ -49,21 +52,30 @@ export default function AuthenticatedShell({
                 type="button"
                 onClick={onOpenMobileNav}
                 className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
-                aria-label="Open menu"
+                aria-label={t('common.openMenu')}
               >
                 <Menu className="w-4 h-4" />
               </button>
               <h1 className="text-lg font-bold flex items-center text-neu-textMain dark:text-darkNeu-textMain">
                 <LedgerIcon className="text-neu-primary dark:text-darkNeu-textMain mr-2 w-5 h-5" />
-                Ledger
+                {t('nav.ledger')}
               </h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={toggleLocale}
+                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center text-[10px] font-bold"
+                aria-label={t('common.language')}
+                title={locale === 'vi' ? t('common.english') : t('common.vietnamese')}
+              >
+                <Languages className="w-4 h-4" />
+              </button>
               <button
                 type="button"
                 onClick={onToggleDarkMode}
                 className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center"
-                aria-label="Toggle theme"
+                aria-label={t('common.toggleTheme')}
               >
                 {isDarkMode ? (
                   <Sun className="w-4 h-4" />
@@ -75,7 +87,7 @@ export default function AuthenticatedShell({
                 type="button"
                 onClick={onSignOut}
                 className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center hover:text-brand-negative"
-                aria-label="Sign out"
+                aria-label={t('common.signOut')}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -92,13 +104,12 @@ export default function AuthenticatedShell({
 
       <VoiceDebtInputConnected />
 
-      {/* Calculator FAB */}
       {!calcOpen && (
         <button
           type="button"
           onClick={() => setCalcOpen(true)}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-neu-primary text-white shadow-neu-drop dark:shadow-neu-dark-drop flex items-center justify-center hover:opacity-90 active:shadow-neu-inner transition-all-custom"
-          aria-label="Open calculator"
+          aria-label={t('common.openCalculator')}
         >
           <CalcIcon className="w-6 h-6" />
         </button>

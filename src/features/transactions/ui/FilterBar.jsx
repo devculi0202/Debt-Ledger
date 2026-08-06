@@ -1,5 +1,6 @@
 import { Plus, Search } from 'lucide-react'
 import NeuButton from '@/shared/ui/NeuButton'
+import { useLocale } from '@/shared/i18n'
 
 export default function FilterBar({
   filters,
@@ -8,6 +9,7 @@ export default function FilterBar({
   onUpdateFilters,
   onOpenAdd,
 }) {
+  const { t } = useLocale()
   const selectClass =
     'bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 text-xs outline-none font-bold border-none appearance-none cursor-pointer pr-8 relative'
 
@@ -15,25 +17,24 @@ export default function FilterBar({
     <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 mb-2 gap-6 shrink-0">
       <div className="space-y-2">
         <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
-          Transactions
+          {t('transactions.title')}
         </h3>
         <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-xl">
-          Each payment or IOU. Link to a debt account when it belongs to a
-          larger loan; leave unlinked for one-off debts.
+          {t('transactions.subtitle')}
         </p>
         {filters.accountId ? (
           <div className="flex items-center gap-3 text-xs font-medium text-neu-textMuted dark:text-darkNeu-textMuted">
             <span>
               {filteredAccount
-                ? `Filtered by account: ${filteredAccount.name}`
-                : 'Account not found'}
+                ? t('transactions.filteredBy', { name: filteredAccount.name })
+                : t('transactions.accountNotFound')}
             </span>
             <button
               type="button"
               onClick={() => onUpdateFilters({ accountId: null })}
               className="underline hover:opacity-80"
             >
-              Clear
+              {t('common.clear')}
             </button>
           </div>
         ) : null}
@@ -41,7 +42,7 @@ export default function FilterBar({
 
       <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
         <NeuButton variant="primary" onClick={onOpenAdd} className="text-xs py-3 px-5">
-          <Plus className="w-3.5 h-3.5" /> Add
+          <Plus className="w-3.5 h-3.5" /> {t('transactions.add')}
         </NeuButton>
 
         <select
@@ -49,7 +50,7 @@ export default function FilterBar({
           onChange={(e) => onUpdateFilters({ time: e.target.value })}
           className={selectClass}
         >
-          <option value="all">All Time</option>
+          <option value="all">{t('transactions.allTime')}</option>
           {uniqueMonths.map((monthStr) => {
             const [year, month] = monthStr.split('-')
             return (
@@ -65,9 +66,9 @@ export default function FilterBar({
           onChange={(e) => onUpdateFilters({ status: e.target.value })}
           className={selectClass}
         >
-          <option value="all">All Statuses</option>
-          <option value="active">Active Only</option>
-          <option value="settled">Settled Only</option>
+          <option value="all">{t('transactions.allStatuses')}</option>
+          <option value="active">{t('transactions.activeOnly')}</option>
+          <option value="settled">{t('transactions.settledOnly')}</option>
         </select>
 
         <div className="relative flex-1 sm:flex-initial">
@@ -78,7 +79,7 @@ export default function FilterBar({
             type="text"
             value={filters.q}
             onChange={(e) => onUpdateFilters({ q: e.target.value })}
-            placeholder="Search..."
+            placeholder={t('transactions.search')}
             className="w-full sm:w-48 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 pl-10 text-xs outline-none border-none placeholder:text-neu-textMuted/50 font-medium"
           />
         </div>

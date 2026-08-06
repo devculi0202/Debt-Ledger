@@ -19,6 +19,7 @@ import SummaryCards from './SummaryCards'
 import FilterBar from './FilterBar'
 import TransactionTable from './TransactionTable'
 import { FolderOpen } from 'lucide-react'
+import { useLocale } from '@/shared/i18n'
 
 export default function TransactionLedger({
   debts,
@@ -31,6 +32,7 @@ export default function TransactionLedger({
   onDelete,
   onDuplicate,
 }) {
+  const { t } = useLocale()
   const [searchParams, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(1)
   const filters = parseTransactionFilters(searchParams)
@@ -62,7 +64,7 @@ export default function TransactionLedger({
 
   const periodText =
     filters.time === 'all'
-      ? '(All Time)'
+      ? t('transactions.allTimeParen')
       : (() => {
           const [year, month] = filters.time.split('-')
           return `(${month}/${year})`
@@ -97,10 +99,10 @@ export default function TransactionLedger({
             onDuplicate={onDuplicate}
           />
 
-          {loading && <LoadingSpinner message="Syncing database..." />}
+          {loading && <LoadingSpinner message={t('common.syncing')} />}
 
           {!loading && filteredDebts.length === 0 && (
-            <EmptyState icon={FolderOpen} message="No records found" />
+            <EmptyState icon={FolderOpen} message={t('common.noRecords')} />
           )}
 
           {!loading && filteredDebts.length > 0 && (
