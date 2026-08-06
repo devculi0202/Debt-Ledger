@@ -13,6 +13,7 @@ Built with React and Supabase. Amounts are shown in **VNĐ**.
 | **Auth** | Sign in with GitHub (Supabase Auth) |
 | **Master Debts** | Create accounts with name, type (I Owe / Owed to Me), principal, and creditor |
 | **Transactions** | Log entries with person, amount, dates, notes, and optional link to a master account |
+| **Voice debt** | Speak or type a debt; Groq extracts structured fields via the serverless API |
 | **Reminder debt** | Link WhatsApp (QR), set phone / message / days-before-due; Railway worker sends self-reminders |
 | **Summary** | See net position, receivables, and liabilities at a glance |
 | **Filters** | Filter by month, status (active / settled), account, or search text |
@@ -26,9 +27,12 @@ Built with React and Supabase. Amounts are shown in **VNĐ**.
 
 - **React 19** + **Vite**
 - **React Router** — `/login`, `/master-debts`, `/transactions`, `/reminders`
+- **TanStack Query** — server state for accounts, transactions, and reminders
 - **Tailwind CSS v4** — neumorphic UI
 - **Lucide React** — icons
 - **Supabase** — Auth + Postgres (`debt_accounts`, `debts`, `reminder_settings`, `reminder_sends`)
+- **`@debt-ledger/domain`** — shared money, paid status, reminder, and voice-parse helpers (`packages/domain`)
+- **Groq** — voice / text debt extraction (`api/debt.js` on Vercel)
 - **Baileys** (Railway worker) — WhatsApp Linked Devices + scheduled sends
 
 ---
@@ -38,6 +42,7 @@ Built with React and Supabase. Amounts are shown in **VNĐ**.
 - Node.js 18+ (recommended)
 - A [Supabase](https://supabase.com) project
 - GitHub OAuth enabled in Supabase Auth (for “Continue with GitHub”)
+- Optional: [Groq](https://console.groq.com) API key for voice debt
 - Optional: [Railway](https://railway.app) for the WhatsApp worker (required for reminders)
 
 ---
@@ -74,7 +79,7 @@ GROQ_API_KEY=your-groq-api-key-here
 | `VITE_SUPABASE_ANON_KEY` | Public anon key |
 | `VITE_LOG_LEVEL` | Optional log level (e.g. `debug`) |
 | `VITE_WHATSAPP_API_URL` | Railway (or local) WhatsApp worker base URL |
-| `GROQ_API_KEY` | Server-only key for voice debt API |
+| `GROQ_API_KEY` | Server-only key for voice debt API (do not prefix with `VITE_`) |
 
 > Never commit `.env`. Only `.env.example` should be in the repo.
 
@@ -110,17 +115,23 @@ npm run dev
 
 Open the URL Vite prints (usually `http://localhost:5173`).
 
+For the voice debt API locally, use Vercel’s local server so `/api/debt` is available:
+
+```bash
+npm run dev:full
+```
+
 ### 6. WhatsApp worker (reminders)
 
 Baileys cannot run on Vercel/Netlify. Use Railway (or any always-on host). See [`whatsapp-worker/README.md`](whatsapp-worker/README.md).
 
-Local worker:
+Local worker (from **repo root** so `@debt-ledger/domain` resolves):
 
 ```bash
-cd whatsapp-worker
-npm install
+cp whatsapp-worker/.env.example whatsapp-worker/.env
 # set SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY
-npm start
+npm install --prefix whatsapp-worker
+npm start --prefix whatsapp-worker
 ```
 
 Then open **Reminder debt** in the sidebar, scan the QR once (WhatsApp → Linked devices). Signing out of Debt Ledger does **not** unlink WhatsApp; use **Disconnect WhatsApp** for that.
@@ -133,7 +144,8 @@ Then open **Reminder debt** in the sidebar, scan the QR once (WhatsApp → Linke
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start development server |
+| `npm run dev` | Start Vite development server |
+| `npm run dev:full` | Vite + Vercel serverless locally (`vercel dev`) |
 | `npm run build` | Production build → `dist/` |
 | `npm run preview` | Preview the production build |
 | `npm run lint` | Run ESLint |
@@ -156,16 +168,17 @@ Unauthenticated users are redirected to `/login`. After sign-in, you land on **M
 ## Project structure
 
 ```
+packages/domain/     Shared domain helpers (money, paid, reminders, voice parse)
 src/
-  components/     UI, modals, sidebar, ledger pieces
-  contexts/       Shared data (accounts + transactions)
-  hooks/          Auth, theme, confirm, data hooks
-  lib/            Supabase client, formatters, filters
-  pages/          Login, Master Debts, Transactions, Reminders
-  services/       Supabase + WhatsApp API clients
-api/              Vercel serverless (voice debt)
-whatsapp-worker/  Baileys + reminder cron (deploy to Railway)
-supabase/         SQL migrations
+  app/               App shell, layouts, Query + data providers
+  pages/             Route pages
+  features/          Feature modules (auth, master-debts, transactions, reminders, voice-debt, calculator)
+  entities/          Domain computations (account summary, transaction filters)
+  shared/            API clients, hooks, UI primitives, formatters
+  widgets/           Sidebar, footer, error boundary
+api/                 Vercel serverless (voice debt → Groq)
+whatsapp-worker/     Baileys + reminder cron (deploy to Railway)
+supabase/            SQL migrations
 ```
 
 ---
@@ -175,7 +188,7 @@ supabase/         SQL migrations
 The repo includes `vercel.json` so client-side routes work (SPA rewrite to `index.html`).
 
 1. Connect the repo to Vercel.
-2. Add the same `VITE_*` env vars in the Vercel project settings (including `VITE_WHATSAPP_API_URL`).
+2. Add the same `VITE_*` env vars and `GROQ_API_KEY` in the Vercel project settings (including `VITE_WHATSAPP_API_URL`).
 3. Deploy the `whatsapp-worker` to Railway separately and set CORS to your Vercel origin.
 4. Set your production URL as an allowed redirect in Supabase Auth.
 

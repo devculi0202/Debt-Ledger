@@ -16,7 +16,6 @@
     "@supabase/supabase-js": "^2.111.0",
     "@whiskeysockets/baileys": "^6.7.18",
     "cors": "^2.8.5",
-    "debt-ledger-react": "file:..",
     "express": "^4.21.2",
     "pino": "^9.6.0",
     "qrcode": "^1.5.4"
