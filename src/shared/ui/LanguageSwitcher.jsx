@@ -35,7 +35,7 @@ export default function LanguageSwitcher({
           value={locale}
           onChange={(e) => setLocale(e.target.value)}
           aria-label={t('common.language')}
-          className="appearance-none bg-transparent text-neu-textMuted text-[10px] font-bold uppercase tracking-wide pl-7 pr-5 py-1.5 rounded-full shadow-neu-drop outline-none cursor-pointer border-none"
+          className="appearance-none bg-neu-surface dark:bg-darkNeu-surface text-neu-textMuted text-[10px] font-bold uppercase tracking-wide pl-7 pr-5 py-1.5 rounded-full border border-line dark:border-line-dark outline-none cursor-pointer"
         >
           {options}
         </select>
@@ -47,8 +47,8 @@ export default function LanguageSwitcher({
   const shellClass =
     className ||
     (variant === 'inline'
-      ? 'flex items-center gap-2 px-4 py-2.5 rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop text-sm font-medium text-neu-textMuted'
-      : 'w-full flex items-center gap-3 px-4 py-3.5 rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop text-sm font-medium text-neu-textMuted')
+      ? 'flex items-center gap-2 px-4 py-2.5 rounded-neu-md bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark text-sm font-medium text-neu-textMuted'
+      : 'w-full flex items-center gap-3 px-4 py-3 rounded-neu-md bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark text-sm font-medium text-neu-textMuted')
 
   return (
     <label className={`relative ${shellClass}`} title={t('common.language')}>

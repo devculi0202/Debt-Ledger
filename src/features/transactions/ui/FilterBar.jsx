@@ -11,12 +11,12 @@ export default function FilterBar({
 }) {
   const { t } = useLocale()
   const selectClass =
-    'bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 text-xs outline-none font-bold border-none appearance-none cursor-pointer pr-8 relative'
+    'bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 text-xs outline-none font-semibold appearance-none cursor-pointer pr-8 relative focus:border-neu-textMuted/50 transition-all-custom'
 
   return (
     <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center pb-6 mb-2 gap-6 shrink-0">
       <div className="space-y-2">
-        <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
+        <h3 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain tracking-tight">
           {t('transactions.title')}
         </h3>
         <p className="text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-xl">
@@ -32,7 +32,7 @@ export default function FilterBar({
             <button
               type="button"
               onClick={() => onUpdateFilters({ accountId: null })}
-              className="underline hover:opacity-80"
+              className="underline hover:opacity-80 cursor-pointer"
             >
               {t('common.clear')}
             </button>
@@ -40,7 +40,7 @@ export default function FilterBar({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+      <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
         <NeuButton variant="primary" onClick={onOpenAdd} className="text-xs py-3 px-5">
           <Plus className="w-3.5 h-3.5" /> {t('transactions.add')}
         </NeuButton>
@@ -80,7 +80,7 @@ export default function FilterBar({
             value={filters.q}
             onChange={(e) => onUpdateFilters({ q: e.target.value })}
             placeholder={t('transactions.search')}
-            className="w-full sm:w-48 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 pl-10 text-xs outline-none border-none placeholder:text-neu-textMuted/50 font-medium"
+            className="w-full sm:w-48 bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3 pl-10 text-xs outline-none placeholder:text-neu-textMuted/60 font-medium focus:border-neu-textMuted/50 transition-all-custom"
           />
         </div>
       </div>

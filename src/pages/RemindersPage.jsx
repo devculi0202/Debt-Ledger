@@ -21,7 +21,7 @@ import { useLocale } from '@/shared/i18n'
 const CTX = 'RemindersPage'
 
 const inputClass =
-  'w-full px-4 py-3 rounded-neu-md bg-neu-bg dark:bg-darkNeu-bg shadow-neu-inner dark:shadow-neu-dark-inner outline-none text-neu-textMain dark:text-darkNeu-textMain'
+  'w-full px-4 py-3 rounded-neu-md bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark outline-none text-neu-textMain dark:text-darkNeu-textMain focus:border-neu-textMuted/50 transition-all-custom'
 
 export default function RemindersPage() {
   const session = useSessionData()
@@ -158,10 +158,12 @@ export default function RemindersPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <div>
-        <h2 className="text-2xl font-bold flex items-center gap-3 text-neu-textMain dark:text-darkNeu-textMain">
-          <Bell className="w-7 h-7" />
+        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-3 text-neu-textMain dark:text-darkNeu-textMain">
+          <span className="w-10 h-10 rounded-xl bg-ink text-accent flex items-center justify-center">
+            <Bell className="w-5 h-5" />
+          </span>
           {t('reminders.title')}
         </h2>
         <p className="mt-2 text-sm text-neu-textMuted dark:text-darkNeu-textMuted max-w-2xl">
@@ -224,7 +226,7 @@ export default function RemindersPage() {
             <img
               src={whatsapp.qr}
               alt={t('reminders.qrAlt')}
-              className="w-64 h-64 rounded-neu-md bg-white p-2 shadow-neu-inner dark:shadow-neu-dark-inner"
+              className="w-64 h-64 rounded-neu-md bg-white p-2 border border-line dark:border-line-dark"
             />
           </div>
         ) : null}

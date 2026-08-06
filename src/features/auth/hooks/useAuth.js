@@ -19,7 +19,7 @@ export default function useAuth() {
       logger.info(`Auth state changed: ${event}`, 'auth')
       setSession(nextSession)
       if (event === 'SIGNED_IN' && nextSession) {
-        navigate('/master-debts', { replace: true })
+        navigate('/overview', { replace: true })
       }
     })
 

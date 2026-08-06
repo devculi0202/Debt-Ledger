@@ -26,12 +26,14 @@ export default function LoginPage({ onSignIn }) {
           <LanguageSwitcher variant="inline" />
         </div>
 
-        <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop mb-2">
-            <LedgerIcon className="w-8 h-8 text-neu-primary dark:text-darkNeu-textMain" />
+        <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-ink mb-2">
+            <LedgerIcon className="w-8 h-8 text-accent" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{t('login.welcome')}</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {t('login.welcome')}
+            </h1>
             <p className="text-neu-textMuted dark:text-darkNeu-textMuted mt-2 text-sm">
               {t('login.subtitle')}
             </p>
@@ -39,7 +41,7 @@ export default function LoginPage({ onSignIn }) {
           <button
             type="button"
             onClick={onSignIn}
-            className="w-full flex items-center justify-center gap-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop hover:shadow-neu-inner dark:hover:shadow-neu-dark-inner font-semibold py-3 px-4 rounded-neu-md transition-all-custom"
+            className="w-full flex items-center justify-center gap-3 bg-ink text-white dark:bg-accent dark:text-ink font-semibold py-3.5 px-4 rounded-neu-md hover:opacity-90 active:scale-[0.98] transition-all-custom cursor-pointer"
           >
             <GitHubIcon className="w-5 h-5" />
             {t('login.continueGithub')}

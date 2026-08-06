@@ -111,18 +111,18 @@ export default function TransactionModal({
   }
 
   const inputClass =
-    'w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none border-none text-sm'
+    'w-full bg-neu-bg/60 dark:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 border border-line dark:border-line-dark outline-none focus:border-neu-textMuted/50 text-sm transition-all-custom'
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neu-bg/80 dark:bg-darkNeu-bg/80 backdrop-blur-md transition-opacity px-4">
-      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-md rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm transition-opacity px-4">
+      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-md rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all max-h-[95vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center">
+          <h3 className="text-lg font-bold flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-ink flex items-center justify-center">
               {isEdit ? (
-                <Pencil className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
+                <Pencil className="w-4 h-4 text-accent" />
               ) : (
-                <Plus className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
+                <Plus className="w-4 h-4 text-accent" />
               )}
             </div>
             {isEdit ? t('transactions.updateTitle') : t('transactions.logTitle')}
@@ -130,7 +130,7 @@ export default function TransactionModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner"
+            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full border border-line dark:border-line-dark cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -158,7 +158,7 @@ export default function TransactionModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neu-primary dark:text-darkNeu-textMain mb-2 pl-1 flex items-center gap-1">
+            <label className="block text-sm font-medium text-accent-deep dark:text-accent mb-2 pl-1 flex items-center gap-1">
               <Link2 className="w-3 h-3" /> {t('transactions.linkAccount')}
             </label>
             <select
@@ -206,7 +206,7 @@ export default function TransactionModal({
                 value={form.amount}
                 onChange={handleChange('amount')}
                 placeholder="100000"
-                className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 pr-10 shadow-neu-inner dark:shadow-neu-dark-inner outline-none border-none text-base font-semibold"
+                className="w-full bg-neu-bg/60 dark:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 pr-10 border border-line dark:border-line-dark outline-none focus:border-neu-textMuted/50 text-base font-semibold transition-all-custom"
               />
               <span className="absolute right-4 top-3.5 text-neu-textMuted font-medium">
                 ₫
@@ -253,18 +253,18 @@ export default function TransactionModal({
             />
           </div>
 
-          <div className="pt-4 flex gap-4 mt-4">
+          <div className="pt-4 flex gap-3 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
+              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark hover:bg-neu-bg/60 dark:hover:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom cursor-pointer"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 px-4 py-3 bg-neu-primary text-white shadow-neu-drop dark:shadow-neu-dark-drop font-semibold rounded-neu-md hover:opacity-90 active:shadow-neu-inner transition-all-custom flex justify-center items-center gap-2 disabled:opacity-70"
+              className="flex-1 px-4 py-3 bg-ink text-white dark:bg-accent dark:text-ink font-semibold rounded-neu-md hover:opacity-90 active:scale-[0.98] transition-all-custom flex justify-center items-center gap-2 disabled:opacity-70 cursor-pointer"
             >
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />

@@ -27,7 +27,7 @@ export default function TransactionTable({
   return (
     <table className="w-full text-left border-collapse min-w-[750px]">
       <thead>
-        <tr className="text-neu-textMuted text-[11px] uppercase tracking-widest font-bold">
+        <tr className="text-neu-textMuted text-[11px] uppercase tracking-widest font-bold border-b border-line dark:border-line-dark">
           <th className="px-4 py-4 w-36">{t('transactions.statusDate')}</th>
           <th className="px-4 py-4">{t('transactions.person')}</th>
           <th className="px-4 py-4">{t('transactions.debtAccount')}</th>
@@ -65,11 +65,11 @@ function TransactionRow({
 }) {
   const { t } = useLocale()
   const settled = isSettled(debt.paid)
-  const badgeColor = settled
-    ? 'text-neu-textMuted'
+  const badgeClass = settled
+    ? 'bg-neu-bg dark:bg-white/5 text-neu-textMuted'
     : debt.type === 'owed'
-      ? 'text-brand-positive drop-shadow-sm'
-      : 'text-brand-negative drop-shadow-sm'
+      ? 'bg-brand-positive/10 text-brand-positive'
+      : 'bg-brand-negative/10 text-brand-negative'
   const statusLabel = settled
     ? t('transactions.settled')
     : debt.type === 'owed'
@@ -94,16 +94,14 @@ function TransactionRow({
 
   return (
     <tr
-      className={`group rounded-neu-md overflow-hidden my-3 table-row ${
-        settled
-          ? 'opacity-60 shadow-neu-inner dark:shadow-neu-dark-inner'
-          : 'shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm bg-neu-surface dark:bg-darkNeu-surface'
-      } ${isEditing ? 'ring-2 ring-neu-primary/20' : ''}`}
+      className={`group border-b border-line dark:border-line-dark last:border-b-0 hover:bg-neu-bg/40 dark:hover:bg-white/[0.03] transition-colors ${
+        settled ? 'opacity-55' : ''
+      } ${isEditing ? 'bg-accent/10 dark:bg-accent/5' : ''}`}
     >
-      <td className="p-4 rounded-l-neu-md">
+      <td className="p-4">
         <div className="flex flex-col items-start gap-1.5">
           <span
-            className={`text-[10px] font-bold uppercase tracking-widest ${badgeColor}`}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeClass}`}
           >
             {statusLabel}
           </span>
@@ -120,7 +118,7 @@ function TransactionRow({
       </td>
       <td className="p-4 align-middle whitespace-nowrap">
         {linkedAcc ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner text-[10px] font-bold uppercase tracking-wider text-neu-textMain dark:text-darkNeu-textMain">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neu-bg dark:bg-white/5 border border-line dark:border-line-dark text-[10px] font-bold uppercase tracking-wider text-neu-textMain dark:text-darkNeu-textMain">
             <Link2 className="w-3 h-3 text-neu-textMuted" />
             <span className="truncate max-w-[120px]">{linkedAcc.name}</span>
           </span>
@@ -144,11 +142,11 @@ function TransactionRow({
         ) : null}
       </td>
       <td
-        className={`p-4 font-black text-right text-base tracking-tight ${amountColor}`}
+        className={`p-4 font-extrabold text-right text-base tracking-tight ${amountColor}`}
       >
         {amountDisplay}
       </td>
-      <td className="p-4 text-center space-x-3 whitespace-nowrap rounded-r-neu-md">
+      <td className="p-4 text-center space-x-2 whitespace-nowrap">
         <NeuIconButton
           size="sm"
           onClick={() => onTogglePaid(debt.id)}
@@ -164,7 +162,7 @@ function TransactionRow({
         <NeuIconButton
           size="sm"
           onClick={() => onEdit(debt)}
-          className="hover:text-neu-textMain"
+          className="hover:text-neu-textMain dark:hover:text-darkNeu-textMain"
           title={t('common.edit')}
         >
           <Pencil className="w-3.5 h-3.5" />
@@ -180,7 +178,7 @@ function TransactionRow({
         <NeuIconButton
           size="sm"
           onClick={() => onDuplicate(debt)}
-          className="hover:text-neu-primary"
+          className="hover:text-accent-deep dark:hover:text-accent"
           title={t('transactions.duplicateToMonths')}
         >
           <Copy className="w-3.5 h-3.5" />

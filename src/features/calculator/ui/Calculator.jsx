@@ -199,13 +199,13 @@ export default function Calculator({ open, onClose }) {
   const btnBase =
     'w-full aspect-square rounded-neu-md font-semibold text-lg transition-all-custom select-none active:scale-95 cursor-pointer flex items-center justify-center'
   const btnNum =
-    `${btnBase} bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm active:shadow-neu-inner dark:active:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain`
+    `${btnBase} bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark hover:bg-neu-bg dark:hover:bg-white/10 text-neu-textMain dark:text-darkNeu-textMain`
   const btnOp =
-    `${btnBase} bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm active:shadow-neu-inner dark:active:shadow-neu-dark-inner text-neu-primary dark:text-darkNeu-textMain font-bold`
+    `${btnBase} bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark hover:bg-neu-bg dark:hover:bg-white/10 text-accent-deep dark:text-accent font-bold`
   const btnEquals =
-    `${btnBase} bg-neu-primary text-white shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm active:shadow-neu-inner font-bold`
+    `${btnBase} bg-ink text-accent hover:opacity-90 font-bold`
   const btnAction =
-    `${btnBase} bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm active:shadow-neu-inner dark:active:shadow-neu-dark-inner text-brand-negative font-bold`
+    `${btnBase} bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark hover:bg-neu-bg dark:hover:bg-white/10 text-brand-negative font-bold`
 
   const getClass = (btn) => {
     if (btn === '=') return btnEquals
@@ -224,7 +224,7 @@ export default function Calculator({ open, onClose }) {
     .replace(/-/g, '−')
 
   return (
-    <div ref={panelRef} style={panelStyle} className="w-72 bg-neu-bg dark:bg-darkNeu-bg rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-4 flex flex-col gap-3">
+    <div ref={panelRef} style={panelStyle} className="w-72 bg-neu-surface dark:bg-darkNeu-surface rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-4 flex flex-col gap-3">
       {/* Header */}
       <div
         className="flex items-center justify-between cursor-grab active:cursor-grabbing"
@@ -233,21 +233,21 @@ export default function Calculator({ open, onClose }) {
         onPointerUp={onPointerUp}
       >
         <div className="flex items-center gap-2 text-sm font-bold text-neu-textMain dark:text-darkNeu-textMain">
-          <CalcIcon className="w-4 h-4 text-neu-primary dark:text-darkNeu-textMain" />
+          <CalcIcon className="w-4 h-4 text-accent-deep dark:text-accent" />
           Calculator
         </div>
         <button
           type="button"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={onClose}
-          className="w-7 h-7 rounded-full shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm flex items-center justify-center text-neu-textMuted hover:text-brand-negative transition active:shadow-neu-inner"
+          className="w-7 h-7 rounded-full border border-line dark:border-line-dark flex items-center justify-center text-neu-textMuted hover:text-brand-negative transition cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Display */}
-      <div className="bg-neu-surface dark:bg-darkNeu-surface rounded-neu-md shadow-neu-inner dark:shadow-neu-dark-inner p-4">
+      <div className="bg-neu-bg/60 dark:bg-white/5 rounded-neu-md border border-line dark:border-line-dark p-4">
         <div className="text-xs text-neu-textMuted dark:text-darkNeu-textMuted h-5 text-right truncate">
           {expressionDisplay || '\u00A0'}
         </div>

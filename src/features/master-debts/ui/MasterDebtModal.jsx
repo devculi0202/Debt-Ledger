@@ -67,22 +67,24 @@ export default function MasterDebtModal({
   }
 
   const typeLabelClass = (value) =>
-    `relative flex cursor-pointer rounded-neu-md bg-neu-surface dark:bg-darkNeu-surface p-3 shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner transition-all-custom ${
+    `relative flex cursor-pointer rounded-neu-md p-3 border transition-all-custom ${
       form.type === value
-        ? 'shadow-neu-inner dark:shadow-neu-dark-inner'
-        : ''
+        ? value === 'owe'
+          ? 'border-brand-negative/50 bg-brand-negative/5'
+          : 'border-brand-positive/50 bg-brand-positive/5'
+        : 'border-line dark:border-line-dark bg-neu-bg/40 dark:bg-white/5 hover:border-neu-textMuted/40'
     } ${value === 'owe' ? 'text-brand-negative' : 'text-brand-positive'}`
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neu-bg/80 dark:bg-darkNeu-bg/80 backdrop-blur-md transition-opacity px-4">
-      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-md rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm transition-opacity px-4">
+      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-md rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center">
+          <h3 className="text-lg font-bold flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-ink flex items-center justify-center">
               {isEdit ? (
-                <Pencil className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
+                <Pencil className="w-4 h-4 text-accent" />
               ) : (
-                <Layers className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
+                <Layers className="w-4 h-4 text-accent" />
               )}
             </div>
             {isEdit ? t('masterDebts.editTitle') : t('masterDebts.createTitle')}
@@ -90,7 +92,7 @@ export default function MasterDebtModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner"
+            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full border border-line dark:border-line-dark cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -107,7 +109,7 @@ export default function MasterDebtModal({
               value={form.name}
               onChange={handleChange('name')}
               placeholder={t('masterDebts.accountNamePlaceholder')}
-              className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-sm placeholder:text-neu-textMuted/50 border-none"
+              className="w-full bg-neu-bg/60 dark:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 border border-line dark:border-line-dark outline-none focus:border-neu-textMuted/50 text-sm placeholder:text-neu-textMuted/50 transition-all-custom"
             />
           </div>
 
@@ -159,7 +161,7 @@ export default function MasterDebtModal({
                 value={form.principal}
                 onChange={handleChange('principal')}
                 placeholder="50000000"
-                className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 pr-10 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-base font-bold placeholder:text-neu-textMuted/30 border-none"
+                className="w-full bg-neu-bg/60 dark:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 pr-10 border border-line dark:border-line-dark outline-none focus:border-neu-textMuted/50 text-base font-bold placeholder:text-neu-textMuted/30 transition-all-custom"
               />
               <span className="absolute right-4 top-3.5 text-neu-textMuted font-medium">
                 ₫
@@ -176,22 +178,22 @@ export default function MasterDebtModal({
               value={form.creditor}
               onChange={handleChange('creditor')}
               placeholder={t('masterDebts.personPlaceholder')}
-              className="w-full bg-neu-surface dark:bg-darkNeu-surface text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 shadow-neu-inner dark:shadow-neu-dark-inner outline-none focus:ring-2 focus:ring-neu-primary/20 text-sm placeholder:text-neu-textMuted/50 border-none"
+              className="w-full bg-neu-bg/60 dark:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain rounded-neu-md p-3.5 border border-line dark:border-line-dark outline-none focus:border-neu-textMuted/50 text-sm placeholder:text-neu-textMuted/50 transition-all-custom"
             />
           </div>
 
-          <div className="pt-4 flex gap-4 mt-6">
+          <div className="pt-4 flex gap-3 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
+              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark hover:bg-neu-bg/60 dark:hover:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom cursor-pointer"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 px-4 py-3 bg-neu-primary text-white shadow-neu-drop dark:shadow-neu-dark-drop font-semibold rounded-neu-md hover:opacity-90 active:shadow-neu-inner transition-all-custom flex justify-center items-center gap-2 disabled:opacity-70"
+              className="flex-1 px-4 py-3 bg-ink text-white dark:bg-accent dark:text-ink font-semibold rounded-neu-md hover:opacity-90 active:scale-[0.98] transition-all-custom flex justify-center items-center gap-2 disabled:opacity-70 cursor-pointer"
             >
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />

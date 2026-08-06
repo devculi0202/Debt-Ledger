@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useTransactions from '@/features/transactions/hooks/useTransactions'
 import { useMasterDebtsList } from '@/features/master-debts/hooks/useMasterDebtsQuery'
 import { useSessionData } from '@/app/providers/DataProvider'
@@ -31,6 +33,16 @@ export default function TransactionsPage() {
   } = useTransactions()
   const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm()
   const toast = useToast()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Overview quick action: open the add modal on arrival
+  useEffect(() => {
+    if (!location.state?.openAdd) return
+    openAdd()
+    navigate(location.pathname + location.search, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per navigation state
+  }, [location.state])
 
   async function handleDelete(id) {
     const confirmed = await confirm(

@@ -71,7 +71,7 @@ export default function TransactionLedger({
         })()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <SummaryCards
         net={net}
         totalReceivables={totalReceivables}

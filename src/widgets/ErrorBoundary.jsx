@@ -17,8 +17,8 @@ export default class ErrorBoundary extends Component {
 
     return (
       <div className="bg-neu-bg dark:bg-darkNeu-bg min-h-screen flex items-center justify-center p-6">
-        <div className="bg-neu-surface dark:bg-darkNeu-surface rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-10 max-w-md w-full text-center space-y-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner text-brand-negative">
+        <div className="bg-neu-surface dark:bg-darkNeu-surface rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-10 max-w-md w-full text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-negative/10 text-brand-negative">
             <AlertTriangle className="w-7 h-7" />
           </div>
           <h2 className="text-xl font-bold text-neu-textMain dark:text-darkNeu-textMain">

@@ -14,7 +14,7 @@ const COLORS = {
   success: 'text-brand-positive',
   error: 'text-brand-negative',
   warning: 'text-brand-warning',
-  info: 'text-neu-primary dark:text-darkNeu-textMain',
+  info: 'text-accent-deep dark:text-accent',
 }
 
 let toastId = 0
@@ -54,7 +54,7 @@ export function ToastProvider({ children }) {
           return (
             <div
               key={t.id}
-              className="pointer-events-auto bg-neu-surface dark:bg-darkNeu-surface rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop p-4 flex items-center gap-3 min-w-[280px] max-w-sm animate-[slideIn_0.3s_ease-out]"
+              className="pointer-events-auto bg-neu-surface dark:bg-darkNeu-surface rounded-neu-md border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-4 flex items-center gap-3 min-w-[280px] max-w-sm animate-[slideIn_0.3s_ease-out]"
             >
               <Icon className={`w-5 h-5 shrink-0 ${COLORS[t.type]}`} />
               <span className="text-sm font-medium text-neu-textMain dark:text-darkNeu-textMain flex-1">

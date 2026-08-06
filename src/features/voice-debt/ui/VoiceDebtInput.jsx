@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { Mic, MicOff, LoaderCircle } from 'lucide-react'
+import { Mic, MicOff, LoaderCircle, Sparkles, SendHorizontal } from 'lucide-react'
 import useMediaRecorder from '@/shared/hooks/useMediaRecorder'
 import useDebtSubmit from '../hooks/useDebtSubmit'
 import { useToast } from '@/shared/ui/Toast'
 import { useLocale } from '@/shared/i18n'
 
-export default function VoiceDebtInput({ onSuccess }) {
+/**
+ * Voice/text debt input backed by the Groq flow.
+ * variant "fab": floating pill (mobile shell).
+ * variant "assistant": embedded AI Assistant card (sidebar).
+ */
+export default function VoiceDebtInput({ onSuccess, variant = 'fab' }) {
   const [text, setText] = useState('')
   const [expanded, setExpanded] = useState(false)
   const toast = useToast()
@@ -19,6 +24,7 @@ export default function VoiceDebtInput({ onSuccess }) {
   const inputRef = useRef(null)
   const rootRef = useRef(null)
 
+  const isAssistant = variant === 'assistant'
   const isProcessing = status === 'processing'
   const hasError = status === 'error' || !!recorderError
   const disabled = isRecording || isProcessing
@@ -32,12 +38,12 @@ export default function VoiceDebtInput({ onSuccess }) {
   }, [submitError, toast])
 
   useEffect(() => {
-    if (!expanded) return
+    if (isAssistant || !expanded) return
     inputRef.current?.focus()
-  }, [expanded])
+  }, [expanded, isAssistant])
 
   useEffect(() => {
-    if (!expanded) return
+    if (isAssistant || !expanded) return
 
     const onPointerDown = (e) => {
       if (isRecording || isProcessing) return
@@ -59,7 +65,7 @@ export default function VoiceDebtInput({ onSuccess }) {
       document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [expanded, isRecording, isProcessing, text])
+  }, [expanded, isRecording, isProcessing, text, isAssistant])
 
   const handleTextSubmit = async (e) => {
     e.preventDefault()
@@ -120,21 +126,34 @@ export default function VoiceDebtInput({ onSuccess }) {
     }
   }
 
-  const micClassName = `relative w-10 h-10 shrink-0 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner dark:active:shadow-neu-dark-inner inline-flex justify-center items-center transition-all-custom select-none touch-none ${
-    isRecording
-      ? 'text-brand-negative'
-      : hasError
-        ? 'text-brand-negative'
-        : 'text-neu-textMuted'
-  } disabled:opacity-50`
+  const applyChip = (value) => {
+    if (disabled) return
+    setText(value)
+    inputRef.current?.focus()
+  }
+
+  const micButtonProps = {
+    type: 'button',
+    disabled: isProcessing || !isSupported,
+    onPointerDown: handlePointerDown,
+    onPointerUp: handlePointerEnd,
+    onPointerLeave: handlePointerEnd,
+    onPointerCancel: handlePointerEnd,
+    onContextMenu: (e) => e.preventDefault(),
+    'aria-label': !isSupported
+      ? t('voice.micUnsupported')
+      : isRecording
+        ? t('voice.recordingRelease')
+        : t('voice.holdToRecord'),
+  }
 
   const micIcon = isProcessing ? (
-    <LoaderCircle className="w-5 h-5 animate-spin" />
+    <LoaderCircle className="w-4 h-4 animate-spin" />
   ) : !isSupported ? (
-    <MicOff className="w-5 h-5" />
+    <MicOff className="w-4 h-4" />
   ) : (
     <>
-      <Mic className="w-5 h-5" />
+      <Mic className="w-4 h-4" />
       {isRecording ? (
         <span
           className="absolute inset-0 rounded-full ring-2 ring-brand-negative/60 animate-pulse"
@@ -144,10 +163,94 @@ export default function VoiceDebtInput({ onSuccess }) {
     </>
   )
 
+  if (isAssistant) {
+    return (
+      <div
+        ref={rootRef}
+        className="assistant-card rounded-neu-lg bg-neu-bg/70 dark:bg-white/5 border border-line dark:border-line-dark p-3 space-y-3"
+        role="region"
+        aria-label={t('voice.regionLabel')}
+      >
+        <div className="flex items-center gap-2 px-1">
+          <Sparkles className="w-3.5 h-3.5 text-accent-deep dark:text-accent" />
+          <span className="text-xs font-bold text-neu-textMain dark:text-darkNeu-textMain">
+            {t('voice.assistantTitle')}
+          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-positive" aria-hidden />
+        </div>
+
+        <form
+          onSubmit={handleTextSubmit}
+          className={`flex items-center gap-1.5 bg-neu-surface dark:bg-darkNeu-surface rounded-full border-2 p-1 pl-3 transition-all-custom ${
+            isRecording
+              ? 'border-brand-negative/60'
+              : hasError
+                ? 'border-brand-negative/40'
+                : 'border-accent'
+          }`}
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={disabled}
+            placeholder={
+              isRecording ? t('voice.recording') : t('voice.assistantPlaceholder')
+            }
+            className="w-full min-w-0 bg-transparent outline-none text-xs text-neu-textMain dark:text-darkNeu-textMain placeholder:text-neu-textMuted disabled:opacity-60"
+            aria-label={t('voice.inputLabel')}
+          />
+          <button
+            {...micButtonProps}
+            className={`relative w-7 h-7 shrink-0 rounded-full inline-flex justify-center items-center transition-all-custom select-none touch-none cursor-pointer ${
+              isRecording || hasError
+                ? 'text-brand-negative'
+                : 'text-neu-textMuted hover:text-neu-textMain dark:hover:text-darkNeu-textMain'
+            } disabled:opacity-50`}
+          >
+            {micIcon}
+          </button>
+          <button
+            type="submit"
+            disabled={disabled || !text.trim()}
+            aria-label={t('voice.inputLabel')}
+            className="w-7 h-7 shrink-0 rounded-full bg-ink text-accent inline-flex justify-center items-center hover:opacity-90 disabled:opacity-40 transition-all-custom cursor-pointer"
+          >
+            <SendHorizontal className="w-3.5 h-3.5" />
+          </button>
+        </form>
+
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => applyChip(t('voice.chipOweValue'))}
+            className="px-2.5 py-1 rounded-full bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark text-[10px] font-semibold text-neu-textMuted hover:text-neu-textMain dark:hover:text-darkNeu-textMain transition cursor-pointer"
+          >
+            {t('voice.chipOwe')}
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => applyChip(t('voice.chipOwedValue'))}
+            className="px-2.5 py-1 rounded-full bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark text-[10px] font-semibold text-neu-textMuted hover:text-neu-textMain dark:hover:text-darkNeu-textMain transition cursor-pointer"
+          >
+            {t('voice.chipOwed')}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const micClassName = `relative w-10 h-10 shrink-0 rounded-full bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark shadow-neu-drop-sm dark:shadow-neu-dark-drop-sm inline-flex justify-center items-center transition-all-custom select-none touch-none cursor-pointer ${
+    isRecording || hasError ? 'text-brand-negative' : 'text-neu-textMuted'
+  } disabled:opacity-50`
+
   return (
     <div
       ref={rootRef}
-      className={`fixed bottom-24 right-6 z-50 ${
+      className={`fixed bottom-24 right-6 z-50 md:hidden ${
         expanded ? 'w-[min(22rem,calc(100vw-3rem))]' : 'w-auto'
       }`}
       role="region"
@@ -156,7 +259,7 @@ export default function VoiceDebtInput({ onSuccess }) {
       {expanded ? (
         <form
           onSubmit={handleTextSubmit}
-          className="flex items-center gap-2 bg-neu-surface dark:bg-darkNeu-surface rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop p-2 pl-3"
+          className="flex items-center gap-2 bg-neu-surface dark:bg-darkNeu-surface rounded-full border-2 border-accent shadow-neu-drop dark:shadow-neu-dark-drop p-2 pl-4"
         >
           <div className="relative flex-1 min-w-0">
             <input
@@ -179,23 +282,7 @@ export default function VoiceDebtInput({ onSuccess }) {
             ) : null}
           </div>
 
-          <button
-            type="button"
-            disabled={isProcessing || !isSupported}
-            onPointerDown={handlePointerDown}
-            onPointerUp={handlePointerEnd}
-            onPointerLeave={handlePointerEnd}
-            onPointerCancel={handlePointerEnd}
-            onContextMenu={(e) => e.preventDefault()}
-            aria-label={
-              !isSupported
-                ? t('voice.micUnsupported')
-                : isRecording
-                  ? t('voice.recordingRelease')
-                  : t('voice.holdToRecord')
-            }
-            className={micClassName}
-          >
+          <button {...micButtonProps} className={micClassName}>
             {micIcon}
           </button>
         </form>
@@ -205,7 +292,7 @@ export default function VoiceDebtInput({ onSuccess }) {
           disabled={isProcessing}
           onClick={() => setExpanded(true)}
           aria-label={t('voice.inputLabel')}
-          className={`${micClassName} bg-neu-surface dark:bg-darkNeu-surface`}
+          className={micClassName}
         >
           {micIcon}
         </button>

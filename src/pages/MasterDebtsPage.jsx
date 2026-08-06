@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import useMasterDebts from '@/features/master-debts/hooks/useMasterDebts'
 import { useTransactionsList } from '@/features/transactions/hooks/useTransactionsQuery'
 import { useSessionData } from '@/app/providers/DataProvider'
@@ -12,6 +13,7 @@ import { useLocale } from '@/shared/i18n'
 
 export default function MasterDebtsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const session = useSessionData()
   const { t } = useLocale()
   const {
@@ -27,6 +29,14 @@ export default function MasterDebtsPage() {
   const { debts } = useTransactionsList(session)
   const { confirmState, confirm, handleConfirm, handleCancel } = useConfirm()
   const toast = useToast()
+
+  // Overview quick action: open the create modal on arrival
+  useEffect(() => {
+    if (!location.state?.openCreate) return
+    openCreate()
+    navigate(location.pathname, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per navigation state
+  }, [location.state])
 
   async function handleDelete(id) {
     const confirmed = await confirm(

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from '@/pages/LoginPage'
+import OverviewPage from '@/pages/OverviewPage'
 import MasterDebtsPage from '@/pages/MasterDebtsPage'
 import TransactionsPage from '@/pages/TransactionsPage'
 import RemindersPage from '@/pages/RemindersPage'
@@ -33,7 +34,7 @@ export default function App() {
         path="/login"
         element={
           session ? (
-            <Navigate to="/master-debts" replace />
+            <Navigate to="/overview" replace />
           ) : (
             <LoginPage onSignIn={signIn} />
           )
@@ -58,6 +59,7 @@ export default function App() {
             </DataProvider>
           }
         >
+          <Route path="/overview" element={<OverviewPage />} />
           <Route path="/master-debts" element={<MasterDebtsPage />} />
           <Route path="/transactions" element={<TransactionsPage />} />
           <Route path="/reminders" element={<RemindersPage />} />
@@ -67,7 +69,7 @@ export default function App() {
       <Route
         path="*"
         element={
-          <Navigate to={session ? '/master-debts' : '/login'} replace />
+          <Navigate to={session ? '/overview' : '/login'} replace />
         }
       />
     </Routes>

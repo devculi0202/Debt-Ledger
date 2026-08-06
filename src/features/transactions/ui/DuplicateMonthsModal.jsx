@@ -86,25 +86,25 @@ export default function DuplicateMonthsModal({
       : 'transactions.createRecordsPlural'
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neu-bg/80 dark:bg-darkNeu-bg/80 backdrop-blur-md transition-opacity px-4">
-      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-lg rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm transition-opacity px-4">
+      <div className="bg-neu-surface dark:bg-darkNeu-surface w-full max-w-lg rounded-neu-lg border border-line dark:border-line-dark shadow-neu-drop dark:shadow-neu-dark-drop p-6 transform transition-all max-h-[95vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center">
-              <Copy className="w-3.5 h-3.5 text-neu-primary dark:text-darkNeu-textMain" />
+          <h3 className="text-lg font-bold flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-ink flex items-center justify-center">
+              <Copy className="w-4 h-4 text-accent" />
             </div>
             {t('transactions.duplicateTitle')}
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner"
+            className="text-neu-textMuted hover:text-brand-negative transition w-8 h-8 flex items-center justify-center rounded-full border border-line dark:border-line-dark cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="mb-5 p-3 rounded-neu-md shadow-neu-inner dark:shadow-neu-dark-inner text-sm space-y-1">
+        <div className="mb-5 p-3 rounded-neu-md bg-neu-bg/60 dark:bg-white/5 border border-line dark:border-line-dark text-sm space-y-1">
           <div className="font-bold text-neu-textMain dark:text-darkNeu-textMain">
             {sourceDebt.person}
           </div>
@@ -130,7 +130,7 @@ export default function DuplicateMonthsModal({
                 <button
                   type="button"
                   onClick={selectAll}
-                  className="text-neu-primary hover:underline font-medium"
+                  className="text-accent-deep dark:text-accent hover:underline font-medium cursor-pointer"
                 >
                   {t('transactions.selectAll')}
                 </button>
@@ -156,12 +156,12 @@ export default function DuplicateMonthsModal({
                     title={
                       isSource ? t('transactions.sourceMonthTitle') : undefined
                     }
-                    className={`py-2 rounded-neu-md text-xs font-bold transition-all-custom ${
+                    className={`py-2 rounded-neu-md text-xs font-bold border transition-all-custom ${
                       isSource
-                        ? 'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-textMuted cursor-not-allowed opacity-60'
+                        ? 'border-line dark:border-line-dark bg-neu-bg/60 dark:bg-white/5 text-neu-textMuted cursor-not-allowed opacity-60'
                         : selectedMonths.has(month)
-                          ? 'shadow-neu-inner dark:shadow-neu-dark-inner text-neu-primary'
-                          : 'shadow-neu-drop dark:shadow-neu-dark-drop text-neu-textMuted hover:text-neu-textMain'
+                          ? 'border-ink bg-ink text-accent dark:border-accent/40 cursor-pointer'
+                          : 'border-line dark:border-line-dark text-neu-textMuted hover:text-neu-textMain dark:hover:text-darkNeu-textMain hover:border-neu-textMuted/40 cursor-pointer'
                     }`}
                   >
                     T{month}
@@ -192,7 +192,7 @@ export default function DuplicateMonthsModal({
               <label className="block text-sm font-medium text-neu-textMuted mb-2 pl-1">
                 {t(previewKey, { count: targetCount })}
               </label>
-              <div className="max-h-40 overflow-y-auto rounded-neu-md shadow-neu-inner dark:shadow-neu-dark-inner">
+              <div className="max-h-40 overflow-y-auto rounded-neu-md border border-line dark:border-line-dark bg-neu-bg/40 dark:bg-white/5">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-neu-textMuted uppercase tracking-wider text-[10px]">
@@ -211,7 +211,7 @@ export default function DuplicateMonthsModal({
                     {preview.map(({ month, payload }) => (
                       <tr
                         key={month}
-                        className="border-t border-neu-bg/50 dark:border-darkNeu-bg/50"
+                        className="border-t border-line dark:border-line-dark"
                       >
                         <td className="px-3 py-2 font-bold">T{month}</td>
                         <td className="px-3 py-2 text-neu-textMuted">
@@ -228,18 +228,18 @@ export default function DuplicateMonthsModal({
             </div>
           )}
 
-          <div className="pt-2 flex gap-4">
+          <div className="pt-2 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom"
+              className="flex-1 px-4 py-3 bg-neu-surface dark:bg-darkNeu-surface border border-line dark:border-line-dark hover:bg-neu-bg/60 dark:hover:bg-white/5 text-neu-textMain dark:text-darkNeu-textMain font-semibold rounded-neu-md transition-all-custom cursor-pointer"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || targetCount === 0}
-              className="flex-1 px-4 py-3 bg-neu-primary text-white shadow-neu-drop dark:shadow-neu-dark-drop font-semibold rounded-neu-md hover:opacity-90 active:shadow-neu-inner transition-all-custom flex justify-center items-center gap-2 disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-ink text-white dark:bg-accent dark:text-ink font-semibold rounded-neu-md hover:opacity-90 active:scale-[0.98] transition-all-custom flex justify-center items-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />

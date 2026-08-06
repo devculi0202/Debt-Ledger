@@ -41,7 +41,7 @@ export default function MasterDebtList({
 
   if (loading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         <Header onOpenCreate={onOpenCreate} />
         <LoadingSpinner message={t('common.loadingData')} />
       </div>
@@ -49,16 +49,16 @@ export default function MasterDebtList({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <Header onOpenCreate={onOpenCreate} />
 
       {masterDebts.length === 0 ? (
         <button
           type="button"
           onClick={onOpenCreate}
-          className="w-full rounded-neu-lg p-12 flex flex-col items-center justify-center text-neu-textMuted shadow-neu-inner dark:shadow-neu-dark-inner transition group cursor-pointer"
+          className="w-full rounded-neu-lg p-12 flex flex-col items-center justify-center text-neu-textMuted bg-neu-surface/60 dark:bg-darkNeu-surface/60 border-2 border-dashed border-line dark:border-line-dark hover:border-neu-textMuted/50 transition group cursor-pointer"
         >
-          <div className="w-16 h-16 rounded-full shadow-neu-drop dark:shadow-neu-dark-drop flex items-center justify-center mb-6 transition group-active:shadow-neu-inner">
+          <div className="w-16 h-16 rounded-full bg-ink text-accent flex items-center justify-center mb-6 transition group-hover:scale-105">
             <Plus className="w-5 h-5" />
           </div>
           <span className="font-bold text-lg text-neu-textMain dark:text-darkNeu-textMain">
@@ -69,7 +69,7 @@ export default function MasterDebtList({
           </span>
         </button>
       ) : (
-        <div className="space-y-8 mt-8">
+        <div className="space-y-5">
           {pagedDebts.map((account) => (
             <AccountCard
               key={account.id}
@@ -99,32 +99,32 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
 
   const isOwe = account.type === 'owe'
   const textColor = isOwe ? 'text-brand-negative' : 'text-brand-positive'
-  const badgeText = isOwe ? t('masterDebts.iOwe') : t('masterDebts.owedToMe')
-  const progressColor = isOwe
-    ? 'bg-brand-positive shadow-[0_0_8px_rgba(16,185,129,0.5)]'
-    : 'bg-brand-negative shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+  const badgeClass = isOwe
+    ? 'bg-brand-negative/10 text-brand-negative'
+    : 'bg-brand-positive/10 text-brand-positive'
+  const iconBg = isOwe ? 'bg-brand-negative/10' : 'bg-brand-positive/10'
 
   return (
-    <NeuCard className="p-8">
+    <NeuCard className="p-6 md:p-7">
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
-        <div className="flex items-center gap-6 w-full xl:w-auto">
+        <div className="flex items-center gap-5 w-full xl:w-auto">
           <div
-            className={`w-16 h-16 rounded-full shadow-neu-inner dark:shadow-neu-dark-inner flex items-center justify-center text-2xl shrink-0 ${textColor}`}
+            className={`w-14 h-14 rounded-2xl ${iconBg} flex items-center justify-center shrink-0 ${textColor}`}
           >
             {isOwe ? (
-              <Smartphone className="w-7 h-7 drop-shadow-sm" />
+              <Smartphone className="w-6 h-6" />
             ) : (
-              <HandCoins className="w-7 h-7 drop-shadow-sm" />
+              <HandCoins className="w-6 h-6" />
             )}
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3 mb-2">
               <span
-                className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full shadow-neu-drop dark:shadow-neu-dark-drop ${textColor}`}
+                className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full ${badgeClass}`}
               >
-                {badgeText}
+                {isOwe ? t('masterDebts.iOwe') : t('masterDebts.owedToMe')}
               </span>
-              <h3 className="text-2xl font-bold text-neu-textMain dark:text-darkNeu-textMain">
+              <h3 className="text-xl md:text-2xl font-bold tracking-tight text-neu-textMain dark:text-darkNeu-textMain">
                 {account.name}
               </h3>
             </div>
@@ -145,16 +145,16 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
 
         <div className="w-full xl:w-2/5">
           <div className="flex justify-between text-xs font-bold mb-3 tracking-wide">
-            <span className="text-brand-positive drop-shadow-sm">
+            <span className="text-brand-positive">
               {t('masterDebts.settled', { amount: formatVND(amountPaid) })}
             </span>
-            <span className="text-brand-negative drop-shadow-sm">
+            <span className="text-brand-negative">
               {t('masterDebts.remaining', { amount: formatVND(remaining) })}
             </span>
           </div>
-          <div className="w-full bg-neu-surface dark:bg-darkNeu-surface rounded-full h-3 shadow-neu-inner dark:shadow-neu-dark-inner overflow-hidden p-[2px]">
+          <div className="w-full bg-neu-bg dark:bg-white/10 rounded-full h-2.5 overflow-hidden">
             <div
-              className={`${progressColor} h-full rounded-full relative transition-all duration-1000 ease-out`}
+              className="bg-accent h-full rounded-full relative transition-all duration-1000 ease-out"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -162,10 +162,10 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
             {t('masterDebts.progressHint')}
           </p>
           <div className="mt-4 flex justify-between items-center">
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <NeuIconButton
                 onClick={() => onEdit(account)}
-                className="hover:text-neu-textMain"
+                className="hover:text-neu-textMain dark:hover:text-darkNeu-textMain"
               >
                 <Pencil className="w-3.5 h-3.5" />
               </NeuIconButton>
@@ -177,7 +177,7 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
               </NeuIconButton>
             </div>
             <div className="text-right">
-              <span className="font-bold text-lg text-neu-textMain dark:text-darkNeu-textMain">
+              <span className="font-extrabold text-lg text-neu-textMain dark:text-darkNeu-textMain">
                 {progressPercent.toFixed(1)}%
               </span>
               <p className="text-[10px] text-neu-textMuted mt-0.5 uppercase tracking-wider">
@@ -190,7 +190,7 @@ function AccountCard({ account, debts, onEdit, onDelete, onViewLedger }) {
           </div>
         </div>
       </div>
-      <div className="mt-8 pt-6 flex justify-end">
+      <div className="mt-6 pt-5 border-t border-line dark:border-line-dark flex justify-end">
         <NeuButton onClick={() => onViewLedger(account)}>
           {t('masterDebts.viewLedger')} <ArrowRight className="w-3.5 h-3.5" />
         </NeuButton>
@@ -204,14 +204,18 @@ function Header({ onOpenCreate }) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
       <div>
-        <h2 className="text-3xl font-bold text-neu-textMain dark:text-darkNeu-textMain tracking-tight">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-neu-textMain dark:text-darkNeu-textMain tracking-tight">
           {t('masterDebts.title')}
         </h2>
         <p className="text-sm text-neu-textMuted mt-2 font-medium max-w-xl">
           {t('masterDebts.subtitle')}
         </p>
       </div>
-      <NeuButton onClick={onOpenCreate} className="w-full sm:w-auto justify-center py-3.5 px-6 gap-3">
+      <NeuButton
+        variant="primary"
+        onClick={onOpenCreate}
+        className="w-full sm:w-auto justify-center py-3.5 px-6 gap-3"
+      >
         <Plus className="w-3.5 h-3.5" /> {t('masterDebts.newAccount')}
       </NeuButton>
     </div>

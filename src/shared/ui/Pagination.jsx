@@ -7,7 +7,7 @@ export default function Pagination({ page, totalPages, totalCount, onPageChange 
   if (totalCount <= 0 || totalPages <= 1) return null
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 mt-2 border-t border-neu-textMuted/10">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 mt-2 border-t border-line dark:border-line-dark">
       <p className="text-xs font-medium text-neu-textMuted">
         {t('common.showingPage', { page, totalPages, totalCount })}
       </p>
