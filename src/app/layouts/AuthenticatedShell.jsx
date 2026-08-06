@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
-import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon, Languages } from 'lucide-react'
+import { Moon, Sun, LogOut, Menu, Calculator as CalcIcon } from 'lucide-react'
 import LedgerIcon from '@/widgets/LedgerIcon'
 import Calculator from '@/features/calculator/ui/Calculator'
 import VoiceDebtInputConnected from '@/features/voice-debt/ui/VoiceDebtInputConnected'
 import Sidebar from '@/widgets/Sidebar'
 import Footer from '@/widgets/Footer'
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher'
 import { useLocale } from '@/shared/i18n'
 
 export default function AuthenticatedShell({
@@ -20,7 +21,7 @@ export default function AuthenticatedShell({
   onCloseMobileNav,
 }) {
   const [calcOpen, setCalcOpen] = useState(false)
-  const { t, toggleLocale, locale } = useLocale()
+  const { t } = useLocale()
 
   return (
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
@@ -62,15 +63,7 @@ export default function AuthenticatedShell({
               </h1>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={toggleLocale}
-                className="text-neu-textMuted w-8 h-8 rounded-full shadow-neu-drop flex justify-center items-center text-[10px] font-bold"
-                aria-label={t('common.language')}
-                title={locale === 'vi' ? t('common.english') : t('common.vietnamese')}
-              >
-                <Languages className="w-4 h-4" />
-              </button>
+              <LanguageSwitcher variant="compact" />
               <button
                 type="button"
                 onClick={onToggleDarkMode}

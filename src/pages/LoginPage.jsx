@@ -23,7 +23,7 @@ export default function LoginPage({ onSignIn }) {
     <div className="bg-neu-bg dark:bg-darkNeu-bg text-neu-textMain dark:text-darkNeu-textMain min-h-screen transition-all-custom flex overflow-hidden relative">
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-neu-bg dark:bg-darkNeu-bg transition-opacity duration-300">
         <div className="absolute top-6 right-6 w-auto">
-          <LanguageSwitcher className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-neu-md shadow-neu-drop dark:shadow-neu-dark-drop active:shadow-neu-inner text-sm font-medium text-neu-textMuted transition-all-custom" />
+          <LanguageSwitcher variant="inline" />
         </div>
 
         <div className="bg-neu-surface dark:bg-darkNeu-surface p-8 md:p-12 rounded-neu-lg shadow-neu-drop dark:shadow-neu-dark-drop max-w-md w-full text-center space-y-6">
